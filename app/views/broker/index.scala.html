@@ -1,16 +1,18 @@
-@(brokers: Seq[Map[String, Any]] = Seq())
+@(brokers: Seq[(Zookeeper, Map[String, Any])] = Seq())
 
 <div class="table-responsive">
     <table class="table table-hover">
         <thead>
+            <th>Zookeeper</th>
             <th>Host</th>
             <th>Port</th>
         </thead>
         <tbody>
             @for(broker <- brokers) {
                 <tr>
-                    <td>@broker.get("host").get</td>
-                    <td>@broker.get("port").get.asInstanceOf[Double].toInt</td>
+                    <td>@broker._1.name</td>
+                    <td>@broker._2.get("host").get</td>
+                    <td>@broker._2.get("port").get.asInstanceOf[Double].toInt</td>
                 </tr>
             }
         </tbody>

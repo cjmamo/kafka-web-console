@@ -42,7 +42,7 @@ app.controller("ZookeepersController", function ($scope, $http, feedService) {
     }
 
     $scope.createZookeeper = function (zookeeper) {
-        $http.post('/zookeepers', { host: zookeeper.host, port: zookeeper.port});
+        $http.post('/zookeepers', { name: zookeeper.name, host: zookeeper.host, port: zookeeper.port});
     }
 
 });

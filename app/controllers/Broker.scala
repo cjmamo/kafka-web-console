@@ -15,23 +15,20 @@ object Broker extends Controller {
   def index = Action.async {
     request =>
 
-      val zookeepers = models.Zookeeper.findByStatusId(models.Status.Connected.id)
+      val connectedZks = models.Zookeeper.findByStatusId(models.Status.Connected.id)
 
       val zkConnections: Map[String, ZkClient] = Registry.lookupObject(PropertyConstants.ZookeeperConnections) match {
         case c: Some[Map[String, ZkClient]] => c.get
       }
 
-      val connectedZks = zookeepers.filter(zk => zkConnections.contains(zk.toString))
-
       val brokers = connectedZks.map {
         zk =>
-          val zkClient = zkConnections.get(zk.toString).get
-          val zNode = zkClient.apply("/brokers/ids")
-          Util.twitterToScalaFuture(zNode.getChildren.apply().map {
+          val zkClient = zkConnections.get(zk.id).get
+          Util.twitterToScalaFuture(zkClient("/brokers/ids").getChildren().map {
             brokerIdsChild => brokerIdsChild.children.map(brokerId =>
-              Util.twitterToScalaFuture(zkClient.apply(brokerId.path).getData.apply().map {
+              Util.twitterToScalaFuture(zkClient(brokerId.path).getData().map {
                 broker =>
-                  scala.util.parsing.json.JSON.parseFull(new String(broker.bytes)).get.asInstanceOf[Map[String, Any]]
+                  (zk, scala.util.parsing.json.JSON.parseFull(new String(broker.bytes)).get.asInstanceOf[Map[String, Any]])
               })
             )
           })

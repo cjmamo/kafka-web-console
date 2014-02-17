@@ -11,6 +11,13 @@ object Database extends Schema {
   val groupToZookeepers = oneToManyRelation(groupsTable, zookeepersTable).via((group, zk) => group.id === zk.groupId)
   val statusToZookeepers = oneToManyRelation(statusTable, zookeepersTable).via((status, zk) => status.id === zk.statusId)
 
+  on(this.zookeepersTable) {
+    zookeeper =>
+      declare(
+        zookeeper.name is (primaryKey)
+      )
+  }
+
   on(this.groupsTable) {
     group =>
       declare(

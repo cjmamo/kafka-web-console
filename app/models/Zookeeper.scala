@@ -2,11 +2,12 @@ package models
 
 import org.squeryl.{Query, KeyedEntity}
 import org.squeryl.PrimitiveTypeMode._
-import org.squeryl.dsl.{CompositeKey2, CompositeKey3}
+import org.squeryl.dsl.{CompositeKey, CompositeKey2, CompositeKey3}
 import play.api.libs.json._
 import models.Database._
 import scala.collection.Iterable
 import core.Registry
+import org.squeryl.annotations.Column
 
 object Zookeeper {
 
@@ -16,6 +17,7 @@ object Zookeeper {
     def writes(zookeeper: Zookeeper) = {
 
       Json.obj(
+        "name" -> zookeeper.name,
         "host" -> zookeeper.host,
         "port" -> zookeeper.port,
         "group" -> Group.apply(zookeeper.groupId.toInt).toString,
@@ -39,14 +41,13 @@ object Zookeeper {
   //  }
 
   def upsert(zookeeper: Zookeeper) = inTransaction {
-    val zkCount = from(zookeepersTable)(s => where((zookeeper.host === s.host) and
-      (zookeeper.port === s.port)) select (s)).toList.size
+//    zookeepersTable.insertOrUpdate(zookeeper)
+    val zkCount = from(zookeepersTable)(z => where(zookeeper.name === z.name) select (z)).toList.size
     zkCount match {
       case 1 => this.update(zookeeper)
       case _ if zkCount < 1 => this.insert(zookeeper)
       case _ =>
     }
-
   }
 
   def insert(zookeeper: Zookeeper) = inTransaction {
@@ -58,10 +59,10 @@ object Zookeeper {
   }
 }
 
-case class Zookeeper(val host: String, val port: Int, val groupId: Long, val statusId: Long)
-  extends KeyedEntity[CompositeKey2[String, Int]] {
+case class Zookeeper(@Column("name") val id: String, val host: String, val port: Int, val groupId: Long, val statusId: Long)
+  extends KeyedEntity[String] {
 
-  def id = compositeKey(host, port)
+  def name = id
 
   override def toString = "%s:%s".format(host, port)
 }

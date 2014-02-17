@@ -1,10 +1,11 @@
-@(zookeeperForm: Form[(String, Int)])
+@(zookeeperForm: Form[(String, String, Int)])
 
 <tabset ng-init="getZookeepers('ALL')">
     <tab heading="All" data-ng-click="getZookeepers('ALL')">
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
+                    <th>Name</th>
                     <th>Host</th>
                     <th>Port</th>
                     <th>Status</th>
@@ -12,6 +13,7 @@
                 </thead>
                 <tbody>
                     <tr data-ng-repeat="zookeeper in zookeepers">
+                        <td>{{zookeeper.name}}</td>
                         <td>{{zookeeper.host}}</td>
                         <td>{{zookeeper.port}}</td>
                         <td>{{zookeeper.status}}</td>
@@ -28,6 +30,8 @@
     <tab heading="Register Zookeeper">
         <form role="form" data-ng-submit="createZookeeper(zookeeper)">
             <div class="form-group">
+                @helper.inputText(zookeeperForm("name"), '_label -> "Name", 'required -> "true",
+                    Symbol("data-ng-model") -> "zookeeper.name")
                 @helper.inputText(zookeeperForm("host"), '_label -> "Host", 'required -> "true",
                     Symbol("data-ng-model") -> "zookeeper.host")
                 @helper.inputText(zookeeperForm("port"), '_label -> "Port", '_showConstraints -> false,

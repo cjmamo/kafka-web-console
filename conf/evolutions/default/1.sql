@@ -1,11 +1,12 @@
 # --- !Ups
 
 CREATE TABLE zookeepers (
+  name VARCHAR,
   host VARCHAR,
   port INT,
   statusId LONG,
   groupId LONG,
-  PRIMARY KEY (host, port)
+  PRIMARY KEY (name)
 );
 
 CREATE TABLE groups (

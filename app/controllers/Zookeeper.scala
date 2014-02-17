@@ -16,6 +16,7 @@ import router.Message
 object Zookeeper extends Controller {
 
   val zookeeperForm = Forms.tuple(
+    "name" -> Forms.text,
     "host" -> Forms.text,
     "port" -> Forms.number
   )
@@ -44,10 +45,11 @@ object Zookeeper extends Controller {
         },
         formSuccess => {
 
-          val host: String = formSuccess._1
-          val port: Int = formSuccess._2
+          val name: String = formSuccess._1
+          val host: String = formSuccess._2
+          val port: Int = formSuccess._3
 
-          val zk = models.Zookeeper.insert(models.Zookeeper(host, port, models.Group.findByName("ALL").get.id, models.Status.Disconnected.id))
+          val zk = models.Zookeeper.insert(models.Zookeeper(name, host, port, models.Group.findByName("ALL").get.id, models.Status.Disconnected.id))
 
           try {
             Registry.lookupObject(PropertyConstants.Router) match {

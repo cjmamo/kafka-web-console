@@ -24,22 +24,20 @@ object Topic extends Controller {
   def index = Action.async {
     request =>
 
-      val zookeepers = models.Zookeeper.findByStatusId(models.Status.Connected.id)
+      val connectedZks = models.Zookeeper.findByStatusId(models.Status.Connected.id)
 
       val zkConnections: Map[String, ZkClient] = Registry.lookupObject(PropertyConstants.ZookeeperConnections) match {
         case c: Some[Map[String, ZkClient]] => c.get
       }
 
-      val connectedZks = zookeepers.filter(zk => zkConnections.contains(zk.toString))
-
       val topics = connectedZks.map {
         zk =>
-          val zkClient = zkConnections.get(zk.toString).get
-          val topicsNode = zkClient.apply(BrokerTopicsPath)
-          Util.twitterToScalaFuture(topicsNode.getChildren.apply().map {
+          val zkClient = zkConnections.get(zk.id).get
+          val topicsNode = zkClient(BrokerTopicsPath)
+          Util.twitterToScalaFuture(topicsNode.getChildren().map {
             topics => topics.children.map {
               topic =>
-                val topicAndPartitions = zkClient.apply(BrokerTopicsPath + topic.name + PartitionsPath).getChildren.apply().map {
+                val topicAndPartitions = zkClient(BrokerTopicsPath + topic.name + PartitionsPath).getChildren().map {
                   partitions =>
                     (topic.name, partitions.children.size)
                 }

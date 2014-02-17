@@ -46,38 +46,38 @@ class ConnectionManager() extends Actor {
         case zkConnections: Some[Map[String, ZkClient]] => zkConnections.get
       }
 
-      val zkClient = zkConnections.filterKeys(_.toString == connectMessage.zookeeper.toString) match {
+      val zkClient = zkConnections.filterKeys(_ == connectMessage.zookeeper.id) match {
         case zk if zk.size > 0 => {
           zk.head._2
         }
         case _ => {
-          val zkClient = ZkClient.apply(zk.host + ":" + zk.port.toString, 6000 milliseconds, 6000 milliseconds)(new JavaTimer)
-          Registry.registerObject(PropertyConstants.ZookeeperConnections, Map(zk.toString -> zkClient) ++ zkConnections)
+          val zkClient = ZkClient(zk.host + ":" + zk.port.toString, 6000 milliseconds, 6000 milliseconds)(new JavaTimer)
+          Registry.registerObject(PropertyConstants.ZookeeperConnections, Map(zk.id -> zkClient) ++ zkConnections)
           zkClient
         }
       }
 
       val onSessionEvent: PartialFunction[StateEvent, Unit] = {
         case stateEvent: StateEvent if stateEvent.state.getIntValue == 3 => {
-          router ! ConnectNotification(Zookeeper(zk.host, zk.port, zk.groupId, Status.Connected.id))
+          router ! ConnectNotification(Zookeeper(zk.name, zk.host, zk.port, zk.groupId, Status.Connected.id))
         }
         case stateEvent: StateEvent if stateEvent.state.getIntValue == 0 => {
-          router ! ConnectNotification(Zookeeper(zk.host, zk.port, zk.groupId, Status.Disconnected.id))
+          router ! ConnectNotification(Zookeeper(zk.name, zk.host, zk.port, zk.groupId, Status.Disconnected.id))
         }
       }
 
       zkClient.onSessionEvent(onSessionEvent)
-      val zookeeperFuture = zkClient.apply()
+      val zookeeperFuture = zkClient()
 
       zookeeperFuture.onFailure(_ => {
-        router ! ConnectNotification(Zookeeper(zk.host, zk.port, zk.groupId, Status.Disconnected.id))
+        router ! ConnectNotification(Zookeeper(zk.name, zk.host, zk.port, zk.groupId, Status.Disconnected.id))
         Akka.system.scheduler.scheduleOnce(
           Duration.create(5, TimeUnit.SECONDS), self, Message.Connect(zk)
         )
       })
 
       zookeeperFuture.onSuccess(zookeeper => {
-        router ! ConnectNotification(Zookeeper(zk.host, zk.port, zk.groupId, Status.Connected.id))
+        router ! ConnectNotification(Zookeeper(zk.name, zk.host, zk.port, zk.groupId, Status.Connected.id))
       })
     }
 
