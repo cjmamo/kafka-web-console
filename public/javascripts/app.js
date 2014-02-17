@@ -48,16 +48,16 @@ var app = angular.module('app', ['ngRoute', 'ui.bootstrap'], function ($httpProv
 )
     .config(function ($routeProvider) {
         $routeProvider
-            .when('/servers', {
-                controller: 'ServersController',
-                templateUrl: '/servers'
+            .when('/zookeepers', {
+                controller: 'ZookeepersController',
+                templateUrl: '/zookeepers'
             })
             .when('/topics', {
-                controller: 'ServersController',
+                controller: 'ZookeepersController',
                 templateUrl: '/topics'
             })
             .when('/brokers', {
-                controller: 'ServersController',
+                controller: 'ZookeepersController',
                 templateUrl: '/brokers'
             })
             .otherwise({

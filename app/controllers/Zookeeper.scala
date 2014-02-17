@@ -13,24 +13,24 @@ import akka.actor.ActorRef
 import router.Message
 
 
-object Server extends Controller {
+object Zookeeper extends Controller {
 
   val zookeeperForm = Forms.tuple(
-    "address" -> Forms.text,
+    "host" -> Forms.text,
     "port" -> Forms.number
   )
 
   def index(group: String) = Action {
     implicit request =>
 
-      val servers = models.Group.findByName(group).get.servers
+      val zookeepers = models.Group.findByName(group).get.zookeepers
 
       render {
         case Accepts.Html() => {
-          Ok(views.html.server.index(Form(zookeeperForm)))
+          Ok(views.html.zookeeper.index(Form(zookeeperForm)))
         }
         case Accepts.Json() => {
-          Ok(Json.toJson(servers))
+          Ok(Json.toJson(zookeepers))
         }
       }
 
@@ -44,14 +44,14 @@ object Server extends Controller {
         },
         formSuccess => {
 
-          val address: String = formSuccess._1
+          val host: String = formSuccess._1
           val port: Int = formSuccess._2
 
-          val server = models.Server.insert(models.Server(address, port, models.Group.findByName("ALL").get.id, models.Status.DISCONNECTED.id))
+          val zk = models.Zookeeper.insert(models.Zookeeper(host, port, models.Group.findByName("ALL").get.id, models.Status.Disconnected.id))
 
           try {
-            Registry.lookupObject(PropertyConstants.ROUTER) match {
-              case Some(router: ActorRef) => router ! Message.Connect(server)
+            Registry.lookupObject(PropertyConstants.Router) match {
+              case Some(router: ActorRef) => router ! Message.Connect(zk)
               case _ =>
             }
 

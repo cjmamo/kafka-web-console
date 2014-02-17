@@ -4,19 +4,12 @@ import org.squeryl.PrimitiveTypeMode._
 import org.squeryl.Schema
 
 object Database extends Schema {
-  val serversTable = table[Server]("servers")
+  val zookeepersTable = table[Zookeeper]("zookeepers")
   val groupsTable = table[Group]("groups")
   val statusTable = table[Status]("status")
 
-  val groupToServers = oneToManyRelation(groupsTable, serversTable).via((group, server) => group.id === server.groupId)
-  val statusToServers = oneToManyRelation(statusTable, serversTable).via((status, server) => status.id === server.statusId)
-
-//  on(this.serversTable) {
-//    server =>
-//      declare(
-//        (server.address, server.port, server.groupId) is (unique)
-//      )
-//  }
+  val groupToZookeepers = oneToManyRelation(groupsTable, zookeepersTable).via((group, zk) => group.id === zk.groupId)
+  val statusToZookeepers = oneToManyRelation(statusTable, zookeepersTable).via((status, zk) => status.id === zk.statusId)
 
   on(this.groupsTable) {
     group =>

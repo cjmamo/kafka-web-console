@@ -13,32 +13,40 @@ import com.twitter.conversions.time._
 import com.twitter.util.{Throw, Return, JavaTimer}
 import scala.concurrent.{Promise, Future}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import org.I0Itec.zkclient
-import models.Server
+import models.Zookeeper
+import util.Util
 
 object Topic extends Controller {
+
+  val BrokerTopicsPath = "/brokers/topics"
+  val PartitionsPath = "/partitions"
 
   def index = Action.async {
     request =>
 
-      val servers = models.Server.findByStatusId(models.Status.CONNECTED.id)
+      val zookeepers = models.Zookeeper.findByStatusId(models.Status.Connected.id)
 
-      val serverConnections: Map[String, ZkClient] = Registry.lookupObject(PropertyConstants.SERVER_CONNECTIONS) match {
-        case serverConnections: Some[Map[String, ZkClient]] => serverConnections.get
+      val zkConnections: Map[String, ZkClient] = Registry.lookupObject(PropertyConstants.ZookeeperConnections) match {
+        case c: Some[Map[String, ZkClient]] => c.get
       }
 
-      val connectedServers = servers.filter(server => serverConnections.contains(server.toString))
+      val connectedZks = zookeepers.filter(zk => zkConnections.contains(zk.toString))
 
-      val topics = connectedServers.map(server => {
-        val zkClient = serverConnections.get(server.toString).get
-        val zNode = zkClient.apply("/brokers/topics")
-        twitterToScalaFuture(zNode.getChildren.apply().map(topicsNode => topicsNode.children.map{topic =>
-          val topicAndPartitions = zkClient.apply("/brokers/topics/" + topic.name + "/partitions").getChildren.apply().map{partitions =>
-            (topic.name, partitions.children.size)
-          }
-          twitterToScalaFuture(topicAndPartitions)
-        }))
-      }).toList
+      val topics = connectedZks.map {
+        zk =>
+          val zkClient = zkConnections.get(zk.toString).get
+          val topicsNode = zkClient.apply(BrokerTopicsPath)
+          Util.twitterToScalaFuture(topicsNode.getChildren.apply().map {
+            topics => topics.children.map {
+              topic =>
+                val topicAndPartitions = zkClient.apply(BrokerTopicsPath + topic.name + PartitionsPath).getChildren.apply().map {
+                  partitions =>
+                    (topic.name, partitions.children.size)
+                }
+                Util.twitterToScalaFuture(topicAndPartitions)
+            }
+          })
+      }.toList
 
       if (topics.size > 0) {
         Future.reduce(topics)((topic, allTopics) => {
@@ -51,14 +59,4 @@ object Topic extends Controller {
         Future(Ok(views.html.topic.index()))
       }
   }
-
-  private def twitterToScalaFuture[A](twitterFuture: com.twitter.util.Future[A]): Future[A] = {
-    val promise = Promise[A]()
-    twitterFuture respond {
-      case Return(a) => promise success a
-      case Throw(e) => promise failure e
-    }
-    promise.future
-  }
-
 }

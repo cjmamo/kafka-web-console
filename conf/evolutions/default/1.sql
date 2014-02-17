@@ -1,11 +1,11 @@
 # --- !Ups
 
-CREATE TABLE servers (
-  address VARCHAR,
+CREATE TABLE zookeepers (
+  host VARCHAR,
   port INT,
   statusId LONG,
   groupId LONG,
-  PRIMARY KEY (address, port)
+  PRIMARY KEY (host, port)
 );
 
 CREATE TABLE groups (
@@ -27,6 +27,6 @@ INSERT INTO status (id, name) VALUES (1, 'CONNECTED');
 
 # --- !Downs
 
-DROP TABLE IF EXISTS servers;
+DROP TABLE IF EXISTS zookeepers;
 DROP TABLE IF EXISTS groups;
 DROP TABLE IF EXISTS status;

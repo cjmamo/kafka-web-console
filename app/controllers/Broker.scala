@@ -8,34 +8,36 @@ import scala.concurrent.{Promise, Future}
 import com.twitter.util.{Throw, Return}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import scala.util.parsing.json.JSON
+import util.Util
 
 object Broker extends Controller {
 
   def index = Action.async {
     request =>
 
-      val servers = models.Server.findByStatusId(models.Status.CONNECTED.id)
+      val zookeepers = models.Zookeeper.findByStatusId(models.Status.Connected.id)
 
-      val serverConnections: Map[String, ZkClient] = Registry.lookupObject(PropertyConstants.SERVER_CONNECTIONS) match {
-        case serverConnections: Some[Map[String, ZkClient]] => serverConnections.get
+      val zkConnections: Map[String, ZkClient] = Registry.lookupObject(PropertyConstants.ZookeeperConnections) match {
+        case c: Some[Map[String, ZkClient]] => c.get
       }
 
-      val connectedServers = servers.filter(server => serverConnections.contains(server.toString))
+      val connectedZks = zookeepers.filter(zk => zkConnections.contains(zk.toString))
 
-      val brokers = connectedServers.map(server => {
-
-        val zkClient = serverConnections.get(server.toString).get
-        val zNode = zkClient.apply("/brokers/ids")
-        twitterToScalaFuture(zNode.getChildren.apply().map(brokerIdsChild => brokerIdsChild.children.map(brokerId => {
-          twitterToScalaFuture(zkClient.apply(brokerId.path).getData.apply().map(broker => {
-            scala.util.parsing.json.JSON.parseFull(new String(broker.bytes)).get.asInstanceOf[Map[String, Any]]
-          }))
-        })))
-      }).toList
+      val brokers = connectedZks.map {
+        zk =>
+          val zkClient = zkConnections.get(zk.toString).get
+          val zNode = zkClient.apply("/brokers/ids")
+          Util.twitterToScalaFuture(zNode.getChildren.apply().map {
+            brokerIdsChild => brokerIdsChild.children.map(brokerId =>
+              Util.twitterToScalaFuture(zkClient.apply(brokerId.path).getData.apply().map {
+                broker =>
+                  scala.util.parsing.json.JSON.parseFull(new String(broker.bytes)).get.asInstanceOf[Map[String, Any]]
+              })
+            )
+          })
+      }.toList
 
       if (brokers.size > 0) {
-
-
         Future.reduce(brokers)((topic, allTopics) => {
           topic ++ allTopics
         }).flatMap(topic => {
@@ -47,15 +49,6 @@ object Broker extends Controller {
       else {
         Future(Ok(views.html.topic.index()))
       }
-  }
-
-  private def twitterToScalaFuture[A](twitterFuture: com.twitter.util.Future[A]): Future[A] = {
-    val promise = Promise[A]()
-    twitterFuture respond {
-      case Return(a) => promise success a
-      case Throw(e) => promise failure e
-    }
-    promise.future
   }
 
 }

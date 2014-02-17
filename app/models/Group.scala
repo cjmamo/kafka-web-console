@@ -10,7 +10,7 @@ object Group extends Enumeration  {
 //  object Group extends Enumeration  {
 //    type Group = Value
 
-    val ALL = Value("ALL")
+    val All = Value("ALL")
 //  }
 
   import Database.groupsTable
@@ -29,7 +29,7 @@ object Group extends Enumeration  {
 case class Group(val name: String) extends KeyedEntity[Long] {
   override val id = 0L
 
-  lazy val servers: List[Server] = inTransaction {
-    Database.groupToServers.left(this).toList
+  lazy val zookeepers: List[Zookeeper] = inTransaction {
+    Database.groupToZookeepers.left(this).toList
   }
 }

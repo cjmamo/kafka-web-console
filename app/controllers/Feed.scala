@@ -13,7 +13,7 @@ object Feed extends Controller {
 
     val in = Iteratee.ignore[String]
 
-    val out = Registry.lookupObject(PropertyConstants.BROADCAST_CHANNEL) match {
+    val out = Registry.lookupObject(PropertyConstants.BroadcastChannel) match {
       case Some(broadcastChannel: (Enumerator[String], Concurrent.Channel[String])) => broadcastChannel._1
       case _ => Enumerator.empty[String]
     }

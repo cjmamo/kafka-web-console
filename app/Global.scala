@@ -29,11 +29,11 @@ object Global extends GlobalSettings {
     val clientManager = Akka.system.actorOf(Props(new ClientManager()))
     val router = Akka.system.actorOf(Props(new Router(List(connectionManager, databaseManager, clientManager))))
 
-    Registry.registerObject(PropertyConstants.BROADCAST_CHANNEL, Concurrent.broadcast[String])
-    Registry.registerObject(PropertyConstants.ROUTER, router)
+    Registry.registerObject(PropertyConstants.BroadcastChannel, Concurrent.broadcast[String])
+    Registry.registerObject(PropertyConstants.Router, router)
 
-    for (server <- models.Server.findAll) {
-      router ! Message.Connect(server)
+    for (zookeeper <- models.Zookeeper.findAll) {
+      router ! Message.Connect(zookeeper)
     }
   }
 

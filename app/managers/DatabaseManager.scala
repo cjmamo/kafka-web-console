@@ -6,15 +6,15 @@ import Message.ConnectNotification
 import core.Registry
 import Registry.PropertyConstants
 import play.api.libs.iteratee.{Concurrent, Enumerator}
-import models.{Status, Server}
+import models.{Status, Zookeeper}
 
 class DatabaseManager extends Actor {
 
   override def receive: Actor.Receive = {
 
     case connectNotification: Message.ConnectNotification => {
-      val server = connectNotification.server
-      Server.upsert(server)
+      val zk = connectNotification.zookeeper
+      Zookeeper.upsert(zk)
     }
   }
 

@@ -5,8 +5,8 @@
 # Home page
 GET         /                    controllers.Application.index()
 
-GET         /servers             controllers.Server.index(group: String ?= "ALL")
-POST        /servers             controllers.Server.create()
+GET         /zookeepers          controllers.Zookeeper.index(group: String ?= "ALL")
+POST        /zookeepers          controllers.Zookeeper.create()
 
 GET         /topics              controllers.Topic.index()
 

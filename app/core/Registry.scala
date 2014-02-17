@@ -6,9 +6,9 @@ object Registry {
 
   object PropertyConstants extends Enumeration {
     type PropertyConstants = Value
-    val SERVER_CONNECTIONS = Value("CONNECTED-SERVERS")
-    val ROUTER = Value("ROUTER")
-    val BROADCAST_CHANNEL = Value("BROADCAST-CHANNEL")
+    val ZookeeperConnections = Value("ZOOKEEPER-CONNECTIONS")
+    val Router = Value("ROUTER")
+    val BroadcastChannel = Value("BROADCAST-CHANNEL")
   }
 
   private var properties = Map[String, Any]()

@@ -1,11 +1,11 @@
 package router
 
-import models.{Status, Server}
+import models.{Status, Zookeeper}
 
 object Message {
 
-  case class Connect(val server: Server)
-  case class ConnectNotification(val server: Server)
+  case class Connect(val zookeeper: Zookeeper)
+  case class ConnectNotification(val zookeeper: Zookeeper)
   case class StatusNotification(val status: Status)
 
 }

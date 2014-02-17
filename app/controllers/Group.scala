@@ -6,9 +6,9 @@ import play.api.libs.json._
 object Group extends Controller {
 
   def index() = Action {
-    val servers = models.Group.findByName("ALL").get.servers
+    val zookeepers = models.Group.findByName("ALL").get.zookeepers
 
-    Ok(Json.toJson(servers))
+    Ok(Json.toJson(zookeepers))
   }
 
 }
