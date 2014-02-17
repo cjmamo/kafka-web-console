@@ -1,0 +1,108 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package kafka.javaapi.consumer
+
+import kafka.serializer._
+import scala.collection.mutable
+import scala.collection.JavaConversions
+import kafka.consumer.{ConsumerConfig, TopicFilter}
+import kafka.message.MessageAndMetadata
+import org.I0Itec.zkclient.ZkClient
+
+
+/**
+ * This class handles the consumers interaction with zookeeper
+ *
+ * Directories:
+ * 1. Consumer id registry:
+ * /consumers/[group_id]/ids[consumer_id] -> topic1,...topicN
+ * A consumer has a unique consumer id within a consumer group. A consumer registers its id as an ephemeral znode
+ * and puts all topics that it subscribes to as the value of the znode. The znode is deleted when the client is gone.
+ * A consumer subscribes to event changes of the consumer id registry within its group.
+ *
+ * The consumer id is picked up from configuration, instead of the sequential id assigned by ZK. Generated sequential
+ * ids are hard to recover during temporary connection loss to ZK, since it's difficult for the client to figure out
+ * whether the creation of a sequential znode has succeeded or not. More details can be found at
+ * (http://wiki.apache.org/hadoop/ZooKeeper/ErrorHandling)
+ *
+ * 2. Broker node registry:
+ * /brokers/[0...N] --> { "host" : "host:port",
+ * "topics" : {"topic1": ["partition1" ... "partitionN"], ...,
+ * "topicN": ["partition1" ... "partitionN"] } }
+ * This is a list of all present broker brokers. A unique logical node id is configured on each broker node. A broker
+ * node registers itself on start-up and creates a znode with the logical node id under /brokers. The value of the znode
+ * is a JSON String that contains (1) the host name and the port the broker is listening to, (2) a list of topics that
+ * the broker serves, (3) a list of logical partitions assigned to each topic on the broker.
+ * A consumer subscribes to event changes of the broker node registry.
+ *
+ * 3. Partition owner registry:
+ * /consumers/[group_id]/owner/[topic]/[broker_id-partition_id] --> consumer_node_id
+ * This stores the mapping before broker partitions and consumers. Each partition is owned by a unique consumer
+ * within a consumer group. The mapping is reestablished after each rebalancing.
+ *
+ * 4. Consumer offset tracking:
+ * /consumers/[group_id]/offsets/[topic]/[broker_id-partition_id] --> offset_counter_value
+ * Each consumer tracks the offset of the latest message consumed for each partition.
+ *
+ */
+
+private[kafka] class ZookeeperAsyncConsumerConnector(val config: ConsumerConfig,
+                                                     val enableFetcher: Boolean) extends AsyncConsumerConnector {
+
+  private val underlying = new kafka.consumer.async.ZookeeperConsumerConnector(config, enableFetcher)
+
+  def this(config: ConsumerConfig) = this(config, true)
+
+  // for java client
+  override def createMessageStreams[K, V](topicCountMap: java.util.Map[EventHandler[K, V], java.lang.Integer],
+                                          keyDecoder: Decoder[K],
+                                          valueDecoder: Decoder[V]) {
+
+    val scalaTopicCountMap: Map[EventHandler[K, V], Int] = {
+      import JavaConversions._
+      Map.empty[EventHandler[K, V], Int] ++ (topicCountMap.asInstanceOf[java.util.Map[EventHandler[K, V], Int]]: mutable.Map[EventHandler[K, V], Int])
+    }
+    underlying.consume(scalaTopicCountMap, keyDecoder, valueDecoder)
+  }
+
+  override def createMessageStreams(topicCountMap: java.util.Map[EventHandler[Array[Byte], Array[Byte]], java.lang.Integer]) {
+    createMessageStreams(topicCountMap, new DefaultDecoder(), new DefaultDecoder())
+  }
+
+  override def createMessageStreamsByFilter[K, V](topicFilter: TopicFilter, numStreams: Int, keyDecoder: Decoder[K], valueDecoder: Decoder[V],
+                                                  cb: MessageAndMetadata[K, V] => Unit) {
+    import JavaConversions._
+    underlying.createMessageStreamsByFilter(topicFilter, numStreams, keyDecoder, valueDecoder, cb)
+  }
+
+  override def createMessageStreamsByFilter(topicFilter: TopicFilter, numStreams: Int, cb: MessageAndMetadata[Array[Byte], Array[Byte]] => Unit) {
+    createMessageStreamsByFilter(topicFilter, numStreams, new DefaultDecoder(), new DefaultDecoder(), cb)
+  }
+
+  override def createMessageStreamsByFilter(topicFilter: TopicFilter, cb: MessageAndMetadata[Array[Byte], Array[Byte]] => Unit) {
+    createMessageStreamsByFilter(topicFilter, 1, new DefaultDecoder(), new DefaultDecoder(), cb)
+  }
+
+  override def commitOffsets() {
+    underlying.commitOffsets
+  }
+
+  override def shutdown() {
+    underlying.shutdown
+  }
+
+}

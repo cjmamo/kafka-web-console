@@ -1,0 +1,18 @@
+@(topics: Seq[(String, Int)] = List())
+
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead>
+            <th>Topic</th>
+            <th>Partitions</th>
+        </thead>
+        <tbody>
+            @for(topic <- topics) {
+                <tr>
+                    <td>@topic._1</td>
+                    <td>@topic._2</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
