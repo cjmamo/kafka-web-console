@@ -56,6 +56,10 @@ var app = angular.module('app', ['ngRoute', 'ui.bootstrap'], function ($httpProv
                 controller: 'ServersController',
                 templateUrl: '/topics'
             })
+            .when('/brokers', {
+                controller: 'ServersController',
+                templateUrl: '/brokers'
+            })
             .otherwise({
                 redirectTo: '/'
             });

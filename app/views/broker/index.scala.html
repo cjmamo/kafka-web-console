@@ -1,0 +1,18 @@
+@(brokers: Seq[Map[String, Any]] = Seq())
+
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead>
+            <th>Host</th>
+            <th>Port</th>
+        </thead>
+        <tbody>
+            @for(broker <- brokers) {
+                <tr>
+                    <td>@broker.get("host").get</td>
+                    <td>@broker.get("port").get.asInstanceOf[Double].toInt</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

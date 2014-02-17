@@ -19,7 +19,7 @@ import models.Server
 object Topic extends Controller {
 
   def index = Action.async {
-    implicit request =>
+    request =>
 
       val servers = models.Server.findByStatusId(models.Status.CONNECTED.id)
 
@@ -32,12 +32,12 @@ object Topic extends Controller {
       val topics = connectedServers.map(server => {
         val zkClient = serverConnections.get(server.toString).get
         val zNode = zkClient.apply("/brokers/topics")
-        twitterToScalaFuture(zNode.getChildren.apply().map(node => node.children.map(child => {
-          val topicAndPartitions = zkClient.apply("/brokers/topics/" + child.name + "/partitions").getChildren.apply().map(partitions => {
-            (child.name, partitions.children.size)
-          })
+        twitterToScalaFuture(zNode.getChildren.apply().map(topicsNode => topicsNode.children.map{topic =>
+          val topicAndPartitions = zkClient.apply("/brokers/topics/" + topic.name + "/partitions").getChildren.apply().map{partitions =>
+            (topic.name, partitions.children.size)
+          }
           twitterToScalaFuture(topicAndPartitions)
-        })))
+        }))
       }).toList
 
       if (topics.size > 0) {
@@ -50,36 +50,6 @@ object Topic extends Controller {
       else {
         Future(Ok(views.html.topic.index()))
       }
-
-
-
-
-    //    topics
-
-    //    val topics = serverConnections match {
-    //      case Some(l: List[AsyncConsumerConnector]) => {
-    //        l.map( serverConnection => {
-    //          serverConnection.getZookeeperClient.
-    //        })
-    //      }
-    //      case _ => Nil
-    //    }
-    //
-    //    val topics = serverClient match {
-    //      case Some(zkClient: ZkClient) => ZkUtils.getAllTopics(zkClient)
-    //      case _ => Nil
-    //    }
-
-    //      render {
-    //        case Accepts.Html() => {
-    //          Ok(views.html.topic.index())
-    //        }
-    //        case Accepts.Json() => {
-    //          Ok
-    //          //        Ok(Json.toJson(topics))
-    //        }
-    //      }
-
   }
 
   private def twitterToScalaFuture[A](twitterFuture: com.twitter.util.Future[A]): Future[A] = {
