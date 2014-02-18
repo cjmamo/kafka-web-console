@@ -1,0 +1,16 @@
+@(consumers: List[String] = List())
+
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead>
+            <th>Consumer</th>
+        </thead>
+        <tbody>
+            @for(consumer <- consumers) {
+                <tr>
+                    <td>@consumers</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -1,16 +1,18 @@
-@(topics: Seq[(String, Int)] = List())
+@(topics: Seq[(String, String, Int)] = List())
 
 <div class="table-responsive">
     <table class="table table-hover">
         <thead>
+            <th>Zookeeper</th>
             <th>Topic</th>
             <th>Partitions</th>
         </thead>
         <tbody>
             @for(topic <- topics) {
-                <tr>
+                <tr data-ng-click="getConsumer('@topic._1', '@topic._2');">
                     <td>@topic._1</td>
                     <td>@topic._2</td>
+                    <td>@topic._3</td>
                 </tr>
             }
         </tbody>

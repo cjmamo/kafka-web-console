@@ -53,24 +53,23 @@ var app = angular.module('app', ['ngRoute', 'ui.bootstrap'], function ($httpProv
                 templateUrl: '/zookeepers'
             })
             .when('/topics', {
-                controller: 'ZookeepersController',
+                controller: 'TopicsController',
                 templateUrl: '/topics'
             })
             .when('/brokers', {
                 controller: 'ZookeepersController',
                 templateUrl: '/brokers'
             })
+            .when('/consumers/:zookeeper/:topic', {
+                controller: 'ConsumersController',
+                templateUrl: function(params) {
+                    return '/consumers/' + params.zookeeper + '/' + params.topic
+                }
+            })
             .otherwise({
                 redirectTo: '/'
             });
-    })
-
-//    .run(function ($location) {
-//        var ws = new WebSocket('ws://' + $location.host() + ':' + $location.port() + '/feed');
-//        ws.onmessage = function (msg) {
-//            $('#load-average').text(msg.data)
-//        }
-//    });
+    });
 
 app.service('feedService', function ($location) {
     ws = new WebSocket('ws://' + $location.host() + ':' + $location.port() + '/feed');

@@ -22,8 +22,6 @@ object Topic extends Controller {
   val PartitionsPath = "/partitions"
 
   def index = Action.async {
-    request =>
-
       val connectedZks = models.Zookeeper.findByStatusId(models.Status.Connected.id)
 
       val zkConnections: Map[String, ZkClient] = Registry.lookupObject(PropertyConstants.ZookeeperConnections) match {
@@ -37,9 +35,9 @@ object Topic extends Controller {
           Util.twitterToScalaFuture(topicsNode.getChildren().map {
             topics => topics.children.map {
               topic =>
-                val topicAndPartitions = zkClient(BrokerTopicsPath + topic.name + PartitionsPath).getChildren().map {
+                val topicAndPartitions = zkClient(BrokerTopicsPath + "/" + topic.name + PartitionsPath).getChildren().map {
                   partitions =>
-                    (topic.name, partitions.children.size)
+                    (zk.name, topic.name, partitions.children.size)
                 }
                 Util.twitterToScalaFuture(topicAndPartitions)
             }

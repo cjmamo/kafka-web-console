@@ -75,10 +75,6 @@ class ConnectionManager() extends Actor {
           Duration.create(5, TimeUnit.SECONDS), self, Message.Connect(zk)
         )
       })
-
-      zookeeperFuture.onSuccess(zookeeper => {
-        router ! ConnectNotification(Zookeeper(zk.name, zk.host, zk.port, zk.groupId, Status.Connected.id))
-      })
     }
 
     case Terminated => shutdownConnections()
