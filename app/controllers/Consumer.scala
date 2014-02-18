@@ -1,45 +1,24 @@
 package controllers
 
 import play.api.mvc.{Action, Controller}
-import play.api.data.Form
-import com.twitter.zk.ZkClient
-import core.Registry
-import core.Registry.PropertyConstants
 import scala.concurrent.Future
-import util.Util
+import util.Util._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
 object Consumer extends Controller {
 
   def show(zookeeper: String, topic: String) = Action.async {
 
-    val connectedZks = models.Zookeeper.findByStatusId(models.Status.Connected.id)
+    val (zk, zkClient) = connectedZookeepers((zk, zkClient) => (zk, zkClient)).filter(_._1.name == zookeeper).head
 
-    val zkConnections: Map[String, ZkClient] = Registry.lookupObject(PropertyConstants.ZookeeperConnections) match {
-      case c: Some[Map[String, ZkClient]] => c.get
-    }
+    val topicConsumersFuture = for {
+      consumers <- twitterToScalaFuture(zkClient("/consumers").getChildren().map(_.children))
+      consumersAndTopics <- Future.sequence(consumers.map { c =>
+        twitterToScalaFuture(zkClient("/consumers/" + c.name + "/owners").getChildren().map(t => (c.name, t.children)))
+      })
+    } yield consumersAndTopics.filter(_._2.filter(_.name == topic).size > 0).map(_._1)
 
-    val allZkConsumersList = connectedZks.map {
-      zk =>
-        val zkClient = zkConnections.get(zk.id).get
-        val consumersFuture = zkClient("/consumers").getChildren().map(node => node.children)
-        val consumersAndTopicsTwitterFuture = consumersFuture.map(consumers => consumers.map(c => zkClient("/consumers/" + c.name + "/owners").getChildren().map(t => Map(c.name -> t.children))))
-        val consumersAndTopicsFuture = Util.twitterToScalaFuture(consumersAndTopicsTwitterFuture)
-        val consumersAndTopicsFlattenedFuture = consumersAndTopicsFuture.flatMap(consumersAndTopics => Future.sequence(consumersAndTopics.map(i => Util.twitterToScalaFuture(i))))
-
-        consumersAndTopicsFlattenedFuture.map {
-          consumersAndTopicsFlattened => consumersAndTopicsFlattened.filter {
-            consumerAndTopics =>
-              consumerAndTopics.head._2.filter(t => t.name == topic).size > 0
-          }.map(filtered => filtered.head._1)
-        }
-    }.toList
-
-    Future.sequence(allZkConsumersList).map {
-      allZksList =>
-        Ok(views.html.consumer.show(allZksList.flatten))
-    }
-
+    topicConsumersFuture.map(topicConsumers => Ok(views.html.consumer.show(topicConsumers)))
   }
 
 }

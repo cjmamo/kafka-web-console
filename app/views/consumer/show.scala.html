@@ -1,4 +1,4 @@
-@(consumers: List[String] = List())
+@(consumers: Seq[String] = List())
 
 <div class="table-responsive">
     <table class="table table-hover">
@@ -8,7 +8,7 @@
         <tbody>
             @for(consumer <- consumers) {
                 <tr>
-                    <td>@consumers</td>
+                    <td>@consumer</td>
                 </tr>
             }
         </tbody>
