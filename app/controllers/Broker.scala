@@ -16,13 +16,11 @@ object Broker extends Controller {
         brokers <- Future.sequence(brokerIds.map(brokerId => twitterToScalaFuture(zkClient(brokerId.path).getData())))
       } yield brokers.map(b => (zk, scala.util.parsing.json.JSON.parseFull(new String(b.bytes)).get.asInstanceOf[Map[String, Any]]))
 
-    }.toList
-
-    if (brokers.size > 0) {
-      Future.sequence(brokers).map(l => Ok(views.html.broker.index(l.flatten)))
     }
-    else {
-      Future(Ok(views.html.topic.index()))
+
+    brokers match {
+      case Some(bs) if bs.size > 0 => Future.sequence(bs).map(l => Ok(views.html.broker.index(l.flatten)))
+      case _ => Future(Ok(views.html.broker.index()))
     }
   }
 

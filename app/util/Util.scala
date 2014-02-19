@@ -17,14 +17,19 @@ object Util {
     promise.future
   }
 
-  def connectedZookeepers[A](block: (Zookeeper, ZkClient) => A) = {
+  def connectedZookeepers[A](block: (Zookeeper, ZkClient) => A): Option[List[A]] = {
     val connectedZks = models.Zookeeper.findByStatusId(models.Status.Connected.id)
 
     val zkConnections: Map[String, ZkClient] = Registry.lookupObject(PropertyConstants.ZookeeperConnections) match {
-      case c: Some[Map[String, ZkClient]] => c.get
+      case c: Some[Map[String, ZkClient]] if connectedZks.size > 0 => c.get
     }
 
-    connectedZks.map(zk => block(zk, zkConnections.get(zk.id).get))
+    if (connectedZks.size > 0) {
+      Option(connectedZks.map(zk => block(zk, zkConnections.get(zk.id).get)).toList)
+    }
+    else {
+      None
+    }
   }
 
 }

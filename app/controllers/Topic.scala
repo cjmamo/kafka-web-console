@@ -1,7 +1,6 @@
 package controllers
 
 import play.api.mvc.{Action, Controller}
-import core.Registry
 import scala.concurrent.{Future}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import util.Util._
@@ -20,13 +19,11 @@ object Topic extends Controller {
           twitterToScalaFuture(zkClient(BrokerTopicsPath + "/" + t.name + PartitionsPath).getChildren().map((t.name, _)))
         })
       } yield topicAndPartitions.map(ps => (zk.name, ps._1, ps._2.children.size))
-    }.toList
-
-    if (topics.size > 0) {
-      Future.sequence(topics).map(l => Ok(views.html.topic.index(l.flatten)))
     }
-    else {
-      Future(Ok(views.html.topic.index()))
+
+    topics match {
+      case Some(ts) if ts.size > 0 => Future.sequence(ts).map(l => Ok(views.html.topic.index(l.flatten)))
+      case _ => Future(Ok(views.html.topic.index()))
     }
   }
 }
