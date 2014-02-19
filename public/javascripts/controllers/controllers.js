@@ -13,10 +13,10 @@ app.controller("ZookeepersController", function ($scope, $http, feedService) {
         )
 
         if (isNewZookeeper && typeof($scope.zookeepers) !== 'undefined') {
-            $scope.zookeepers.push(zookeeper);
+            $scope.zookeepers.push(serverZookeeper);
         }
         else if (typeof($scope.zookeepers) === 'undefined') {
-            $scope.zookeepers = [zookeeper];
+            $scope.zookeepers = [serverZookeeper];
         }
 
         $scope.$apply();

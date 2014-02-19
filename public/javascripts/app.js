@@ -71,6 +71,14 @@ var app = angular.module('app', ['ngRoute', 'ui.bootstrap'], function ($httpProv
             });
     });
 
+app.run(function($rootScope, $templateCache) {
+    $rootScope.$on('$routeChangeStart', function(event, next, current) {
+        if (typeof(current) !== 'undefined'){
+            $templateCache.remove(current.templateUrl);
+        }
+    });
+});
+
 app.service('feedService', function ($location) {
     ws = new WebSocket('ws://' + $location.host() + ':' + $location.port() + '/feed');
     return ws
