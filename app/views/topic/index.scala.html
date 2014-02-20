@@ -1,4 +1,4 @@
-@(topics: Seq[(String, String, Int)] = List())
+@(topicsZks: List[(String, Map[String, Seq[String]])] = List())
 
 <div class="table-responsive">
     <table class="table table-hover">
@@ -8,12 +8,14 @@
             <th>Partitions</th>
         </thead>
         <tbody>
-            @for(topic <- topics) {
-                <tr data-ng-click="getConsumer('@topic._1', '@topic._2');">
+            @for(topics <- topicsZks) {
+                @for(topic <- topics._2) {
+                <tr data-ng-click="getConsumerGroup('@topics._1', '@topic._1');">
+                    <td>@topics._1</td>
                     <td>@topic._1</td>
-                    <td>@topic._2</td>
-                    <td>@topic._3</td>
+                    <td>@topic._2.size</td>
                 </tr>
+                }
             }
         </tbody>
     </table>

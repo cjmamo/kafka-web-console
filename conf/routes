@@ -3,20 +3,20 @@
 # ~~~~
 
 # Home page
-GET         /                                   controllers.Application.index()
+GET         /                                                             controllers.Application.index()
 
-GET         /zookeepers                         controllers.Zookeeper.index(group ?= "ALL")
-POST        /zookeepers                         controllers.Zookeeper.create()
+GET         /zookeepers                                                   controllers.Zookeeper.index(group ?= "ALL")
+POST        /zookeepers                                                   controllers.Zookeeper.create()
 
-GET         /topics                             controllers.Topic.index()
+GET         /topics                                                       controllers.Topic.index()
 
-GET         /groups                             controllers.Group.index()
+GET         /groups                                                       controllers.Group.index()
 
-GET         /feed                               controllers.Feed.index()
+GET         /feed                                                         controllers.Feed.index()
 
-GET         /brokers                            controllers.Broker.index()
+GET         /brokers                                                      controllers.Broker.index()
 
-GET         /consumers/:zookeeper/:topic        controllers.Consumer.show(zookeeper, topic)
+GET         /consumergroups/zookeeper/:zookeeper/topic/:topic             controllers.ConsumerGroup.show(zookeeper, topic)
 
 # Map static resources from the /public folder to the /assets URL path
-GET         /assets/*file                       controllers.Assets.at(path="/public", file)
+GET         /assets/*file                                                 controllers.Assets.at(path="/public", file)

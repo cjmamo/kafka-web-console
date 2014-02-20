@@ -7,22 +7,16 @@ import util.Util._
 
 object Topic extends Controller {
 
-  val BrokerTopicsPath = "/brokers/topics"
-  val PartitionsPath = "/partitions"
-
   def index = Action.async {
 
-    val topics = connectedZookeepers { (zk, zkClient) =>
+    val topicsZks = connectedZookeepers { (zk, zkClient) =>
       for {
-        topics <- twitterToScalaFuture(zkClient(BrokerTopicsPath).getChildren().map(topicsNode => topicsNode.children))
-        topicAndPartitions <- Future.sequence(topics.map { t =>
-          twitterToScalaFuture(zkClient(BrokerTopicsPath + "/" + t.name + PartitionsPath).getChildren().map((t.name, _)))
-        })
-      } yield topicAndPartitions.map(ps => (zk.name, ps._1, ps._2.children.size))
+        partitions <- getZChildren(zkClient, "/brokers/topics/*/partitions/*")
+      } yield (zk.name, partitions.map(p => (p.path.split("/").filter(_ != "")(2), p.name)).groupBy(_._1).map(e => e._1 -> e._2.map(_._2)))
     }
 
-    topics match {
-      case Some(ts) if ts.size > 0 => Future.sequence(ts).map(l => Ok(views.html.topic.index(l.flatten)))
+    topicsZks match {
+      case Some(s) if s.size > 0 => Future.sequence(s).map(l => Ok(views.html.topic.index(l)))
       case _ => Future(Ok(views.html.topic.index()))
     }
   }

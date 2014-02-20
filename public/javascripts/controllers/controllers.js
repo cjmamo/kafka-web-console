@@ -36,11 +36,11 @@ app.controller("ZookeepersController", function ($scope, $http, feedService) {
 });
 
 app.controller("TopicsController", function ($scope, $location) {
-    $scope.getConsumer = function (zookeeper, topic) {
-        $location.path('/consumers/' + zookeeper + '/' + topic)
+    $scope.getConsumerGroup = function (zookeeper, topic) {
+        $location.path('/consumergroups/zookeeper/' + zookeeper + '/topic/' + topic)
     }
 });
 
-app.controller("ConsumersController", function ($scope) {
+app.controller("ConsumerGroupsController", function ($scope) {
 
 });

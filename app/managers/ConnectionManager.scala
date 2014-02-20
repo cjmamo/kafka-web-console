@@ -1,21 +1,14 @@
 package managers
 
-import kafka.consumer.ConsumerConfig
-import java.util.Properties
 import kafka.javaapi.consumer.AsyncConsumerConnector
 import core.Registry
 import Registry.PropertyConstants
-import kafka.consumer.async.Consumer
 import models.{Status, Zookeeper}
-import akka.actor.{ActorRef, Terminated, Actor}
-import play.api.libs.iteratee.Enumerator
+import akka.actor.{ActorRef, Actor}
 import router.Message
-import Message.ConnectNotification
 import com.twitter.zk._
-import com.twitter.util.{Future, JavaTimer}
+import com.twitter.util.{JavaTimer}
 import com.twitter.conversions.time._
-import kafka.utils.ZkUtils
-import scala.annotation.tailrec
 import play.api.libs.concurrent.Akka
 import scala.concurrent.duration.Duration
 import java.util.concurrent.TimeUnit
@@ -24,9 +17,7 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import router.Message.ConnectNotification
 import akka.actor.Terminated
 import scala.Some
-import router.Message.ConnectNotification
-import akka.actor.Terminated
-import scala.Some
+import org.apache.zookeeper.Watcher.Event.KeeperState
 
 class ConnectionManager() extends Actor {
 
@@ -43,7 +34,7 @@ class ConnectionManager() extends Actor {
       }
 
       val zkConnections: Map[String, ZkClient] = Registry.lookupObject(PropertyConstants.ZookeeperConnections) match {
-        case zkConnections: Some[Map[String, ZkClient]] => zkConnections.get
+        case Some(zkConnections: Map[_, _]) => zkConnections.asInstanceOf[Map[String, ZkClient]]
       }
 
       val zkClient = zkConnections.filterKeys(_ == connectMessage.zookeeper.id) match {
@@ -58,10 +49,13 @@ class ConnectionManager() extends Actor {
       }
 
       val onSessionEvent: PartialFunction[StateEvent, Unit] = {
-        case stateEvent: StateEvent if stateEvent.state.getIntValue == 3 => {
+        case s: StateEvent if s.state == KeeperState.SyncConnected => {
           router ! ConnectNotification(Zookeeper(zk.name, zk.host, zk.port, zk.groupId, Status.Connected.id))
         }
-        case stateEvent: StateEvent if stateEvent.state.getIntValue == 0 => {
+        case s: StateEvent if s.state == KeeperState.Disconnected => {
+          router ! ConnectNotification(Zookeeper(zk.name, zk.host, zk.port, zk.groupId, Status.Disconnected.id))
+        }
+        case s: StateEvent if s.state == KeeperState.Expired => {
           router ! ConnectNotification(Zookeeper(zk.name, zk.host, zk.port, zk.groupId, Status.Disconnected.id))
         }
       }
@@ -84,8 +78,8 @@ class ConnectionManager() extends Actor {
     val zkConnections = Registry.lookupObject(PropertyConstants.ZookeeperConnections)
 
     zkConnections match {
-      case Some(eventConsumerConnectors: List[AsyncConsumerConnector]) => {
-        eventConsumerConnectors.map(eventConsumerConnector => eventConsumerConnector.shutdown())
+      case Some(eventConsumerConnectors: List[_]) => {
+        eventConsumerConnectors.asInstanceOf[List[AsyncConsumerConnector]].map(eventConsumerConnector => eventConsumerConnector.shutdown())
       }
       case _ =>
     }

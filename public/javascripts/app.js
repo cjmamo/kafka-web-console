@@ -60,10 +60,10 @@ var app = angular.module('app', ['ngRoute', 'ui.bootstrap'], function ($httpProv
                 controller: 'ZookeepersController',
                 templateUrl: '/brokers'
             })
-            .when('/consumers/:zookeeper/:topic', {
-                controller: 'ConsumersController',
+            .when('/consumergroups/zookeeper/:zookeeper/topic/:topic', {
+                controller: 'ConsumerGroupsController',
                 templateUrl: function(params) {
-                    return '/consumers/' + params.zookeeper + '/' + params.topic
+                    return '/consumergroups/zookeeper/' + params.zookeeper + '/topic/' + params.topic
                 }
             })
             .otherwise({
