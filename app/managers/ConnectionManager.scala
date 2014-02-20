@@ -1,13 +1,12 @@
 package managers
 
-import kafka.javaapi.consumer.AsyncConsumerConnector
 import core.Registry
 import Registry.PropertyConstants
 import models.{Status, Zookeeper}
 import akka.actor.{ActorRef, Actor}
 import router.Message
 import com.twitter.zk._
-import com.twitter.util.{JavaTimer}
+import com.twitter.util.JavaTimer
 import com.twitter.conversions.time._
 import play.api.libs.concurrent.Akka
 import scala.concurrent.duration.Duration
@@ -71,15 +70,15 @@ class ConnectionManager() extends Actor {
       })
     }
 
-    case Terminated => shutdownConnections()
+    case Terminated => {
+      shutdownConnections()
+    }
   }
 
   private def shutdownConnections() {
-    val zkConnections = Registry.lookupObject(PropertyConstants.ZookeeperConnections)
-
-    zkConnections match {
-      case Some(eventConsumerConnectors: List[_]) => {
-        eventConsumerConnectors.asInstanceOf[List[AsyncConsumerConnector]].map(eventConsumerConnector => eventConsumerConnector.shutdown())
+    Registry.lookupObject(PropertyConstants.ZookeeperConnections) match {
+      case Some(s: Map[_, _]) => {
+        s.asInstanceOf[Map[String, ZkClient]].map(_._2.release())
       }
       case _ =>
     }

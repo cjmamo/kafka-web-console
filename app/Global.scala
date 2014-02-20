@@ -1,5 +1,5 @@
 
-import akka.actor.{Props, ActorRef}
+import akka.actor.{Terminated, Props, ActorRef}
 import core.Registry
 import managers._
 import org.squeryl.adapters.H2Adapter
@@ -13,17 +13,28 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.Play.current
 import router.{Message, Router}
 import scala.Some
-import scala.concurrent.duration._
 
 object Global extends GlobalSettings {
 
   override def onStart(app: Application) {
+    initiateDb(app)
+    initiateManagers()
+  }
 
-    //Database
+  override def onStop(app: Application) {
+    Registry.lookupObject(PropertyConstants.Router) match {
+      case Some(r: ActorRef) => r ! Terminated
+      case _ =>
+    }
+  }
+
+  private def initiateDb(app: Application) {
     SessionFactory.concreteFactory = Some(() =>
       Session.create(DB.getConnection()(app), new H2Adapter)
     )
+  }
 
+  private def initiateManagers() {
     val connectionManager = Akka.system.actorOf(Props(new ConnectionManager()))
     val databaseManager = Akka.system.actorOf(Props(new DatabaseManager()))
     val clientManager = Akka.system.actorOf(Props(new ClientManager()))
@@ -35,10 +46,6 @@ object Global extends GlobalSettings {
     for (zookeeper <- models.Zookeeper.findAll) {
       router ! Message.Connect(zookeeper)
     }
-  }
-
-  override def onStop(app: Application) {
-    //    ConnectionManager.shutdownConnections()
   }
 
 }
