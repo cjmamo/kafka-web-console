@@ -1,8 +1,6 @@
-package managers
+package actors
 
 import akka.actor.Actor
-import router.Message
-import Message.ConnectNotification
 import core.Registry
 import Registry.PropertyConstants
 import play.api.libs.iteratee.{Concurrent, Enumerator}

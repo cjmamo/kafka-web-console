@@ -42,5 +42,28 @@ app.controller("TopicsController", function ($scope, $location) {
 });
 
 app.controller("ConsumerGroupsController", function ($scope) {
+});
+
+app.controller("BrokersController", function ($scope) {
+
+
+    $scope.activate = function () {
+        alert('asd')
+        $scope.isActive = true;
+    };
+
+
+
+//    $scope.isActive = true;
+////    $scope.globalContext = globalContext;
+//
+////    alert($location.path())
+//    $scope.locationPath = $location.path()
+////  alert($scope.locationPath)
+//
+//    $scope.isActive = function (route) {
+//        alert("ASd")
+//        return route === $location.path();
+//    };
 
 });

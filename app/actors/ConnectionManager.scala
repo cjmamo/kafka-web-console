@@ -1,10 +1,9 @@
-package managers
+package actors
 
 import core.Registry
 import Registry.PropertyConstants
 import models.{Status, Zookeeper}
 import akka.actor.{ActorRef, Actor}
-import router.Message
 import com.twitter.zk._
 import com.twitter.util.JavaTimer
 import com.twitter.conversions.time._
@@ -13,10 +12,12 @@ import scala.concurrent.duration.Duration
 import java.util.concurrent.TimeUnit
 import play.api.Play.current
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import router.Message.ConnectNotification
+import Message.ConnectNotification
 import akka.actor.Terminated
 import scala.Some
 import org.apache.zookeeper.Watcher.Event.KeeperState
+import scala.concurrent.Await
+import util.Util
 
 class ConnectionManager() extends Actor {
 
@@ -78,7 +79,7 @@ class ConnectionManager() extends Actor {
   private def shutdownConnections() {
     Registry.lookupObject(PropertyConstants.ZookeeperConnections) match {
       case Some(s: Map[_, _]) => {
-        s.asInstanceOf[Map[String, ZkClient]].map(_._2.release())
+        s.asInstanceOf[Map[String, ZkClient]].map(z => Await.result(Util.twitterToScalaFuture(z._2.release()), Duration.Inf))
       }
       case _ =>
     }

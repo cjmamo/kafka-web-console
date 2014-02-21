@@ -57,27 +57,32 @@ var app = angular.module('app', ['ngRoute', 'ui.bootstrap'], function ($httpProv
                 templateUrl: '/topics'
             })
             .when('/brokers', {
-                controller: 'ZookeepersController',
+                controller: 'BrokersController',
                 templateUrl: '/brokers'
             })
             .when('/consumergroups/zookeeper/:zookeeper/topic/:topic', {
                 controller: 'ConsumerGroupsController',
-                templateUrl: function(params) {
+                templateUrl: function (params) {
                     return '/consumergroups/zookeeper/' + params.zookeeper + '/topic/' + params.topic
                 }
             })
             .otherwise({
-                redirectTo: '/'
+                redirectTo: '/zookeepers'
             });
     });
 
-app.run(function($rootScope, $templateCache) {
-    $rootScope.$on('$routeChangeStart', function(event, next, current) {
-        if (typeof(current) !== 'undefined'){
+app.run(function ($rootScope, $templateCache, $location) {
+    $rootScope.$on('$routeChangeStart', function (event, next, current) {
+        if (typeof(current) !== 'undefined') {
             $templateCache.remove(current.templateUrl);
         }
     });
+
+    $rootScope.isActive = function(route) {
+        return route === $location.path();
+    };
 });
+
 
 app.service('feedService', function ($location) {
     ws = new WebSocket('ws://' + $location.host() + ':' + $location.port() + '/feed');

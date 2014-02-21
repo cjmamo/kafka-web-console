@@ -10,7 +10,7 @@ import kafka.javaapi.consumer.AsyncConsumerConnector
 import core.Registry
 import Registry.PropertyConstants
 import akka.actor.ActorRef
-import router.Message
+import actors.Message
 
 
 object Zookeeper extends Controller {

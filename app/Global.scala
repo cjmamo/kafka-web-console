@@ -1,7 +1,7 @@
 
 import akka.actor.{Terminated, Props, ActorRef}
 import core.Registry
-import managers._
+import actors._
 import org.squeryl.adapters.H2Adapter
 import org.squeryl.{Session, SessionFactory}
 import play.api.db.DB
@@ -11,7 +11,6 @@ import play.api.{Application, GlobalSettings}
 import Registry.PropertyConstants
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.Play.current
-import router.{Message, Router}
 import scala.Some
 
 object Global extends GlobalSettings {

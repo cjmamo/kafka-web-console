@@ -1,11 +1,10 @@
-package managers
+package actors
 
 import akka.actor.Actor
 import core.Registry
 import Registry.PropertyConstants
 import play.api.libs.iteratee.{Concurrent, Enumerator}
 import play.api.libs.json.Json
-import router.Message
 
 class ClientManager extends Actor {
   override def receive: Actor.Receive = {
