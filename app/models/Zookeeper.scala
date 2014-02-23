@@ -36,9 +36,9 @@ object Zookeeper {
     from(zookeepersTable)(zk => where(zk.statusId === statusId) select (zk)).toList
   }
 
-  //  def findById(address: String, port: Int, groupId: Long): Option[Server] = inTransaction {
-  //    serversTable.lookup(address, port, groupId)
-  //  }
+  def findById(name: String): Option[Zookeeper] = inTransaction {
+    zookeepersTable.lookup(name)
+  }
 
   def upsert(zookeeper: Zookeeper) = inTransaction {
     val zkCount = from(zookeepersTable)(z => where(zookeeper.name === z.name) select (z)).toList.size

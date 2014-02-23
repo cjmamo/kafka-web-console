@@ -3,23 +3,23 @@
 # ~~~~
 
 # Home page
-GET         /                                                        controllers.Application.index()
+GET         /                                         controllers.Application.index()
 
-GET         /zookeepers                                              controllers.Assets.at(path="/public", file="/html/partials/zookeeper/index.html")
-GET         /zookeepers.json                                         controllers.Zookeeper.index(group ?= "ALL")
-POST        /zookeepers.json                                         controllers.Zookeeper.create()
+GET         /zookeepers                               controllers.Assets.at(path="/public", file="/html/partials/zookeeper/index.html")
+GET         /zookeepers.json                          controllers.Zookeeper.index(group ?= "ALL")
+GET         /zookeepers.json/feed                     controllers.Zookeeper.feed()
+POST        /zookeepers.json                          controllers.Zookeeper.create()
 
-GET         /topics                                                  controllers.Assets.at(path="/public", file="/html/partials/topic/index.html")
-GET         /topics.json                                             controllers.Topic.index()
-POST        /topics.json/:name                                       controllers.Topic.show(name)
-GET         /topics/:name                                            controllers.IgnoreParamAssets.at(path="/public", file="/html/partials/topic/show.html", name)
+GET         /topics                                   controllers.Assets.at(path="/public", file="/html/partials/topic/index.html")
+GET         /topics.json                              controllers.Topic.index()
+POST        /topics.json/:name                        controllers.Topic.show(name)
+GET         /topics.json/:name/feed/:zookeeper        controllers.Topic.feed(name, zookeeper)
+GET         /topics/:name                             controllers.IgnoreParamAssets.at(path="/public", file="/html/partials/topic/show.html", name)
 
-GET         /groups                                                  controllers.Group.index()
+GET         /groups                                   controllers.Group.index()
 
-GET         /feed                                                    controllers.Feed.index()
-
-GET         /brokers                                                 controllers.Assets.at(path="/public", file="/html/partials/broker/index.html")
-GET         /brokers.json                                            controllers.Broker.index()
+GET         /brokers                                  controllers.Assets.at(path="/public", file="/html/partials/broker/index.html")
+GET         /brokers.json                             controllers.Broker.index()
 
 # Map static resources from the /public folder to the /assets URL path
-GET         /assets/*file                                            controllers.Assets.at(path="/public", file)
+GET         /assets/*file                             controllers.Assets.at(path="/public", file)

@@ -1,12 +1,22 @@
 package controllers
 
-import play.api.mvc.{Action, Controller}
-import scala.concurrent.Future
+import play.api.mvc.{WebSocket, Action, Controller}
+import scala.concurrent.{Channel, Future}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import common.Util._
 import play.api.libs.json._
-import scala.util.parsing.json.JSONArray
 import play.api.libs.json.JsObject
+import play.api.libs.iteratee.{Concurrent, Enumerator, Iteratee}
+import common.Registry
+import common.Registry.PropertyConstants
+import java.util
+import kafka.javaapi.consumer.EventHandler
+import kafka.message.MessageAndMetadata
+import kafka.serializer.StringDecoder
+import kafka.consumer.async.Consumer
+import kafka.consumer.ConsumerConfig
+import java.util.Properties
+import com.twitter.zk.ZkClient
 
 object Topic extends Controller {
 
@@ -66,13 +76,45 @@ object Topic extends Controller {
     }
   }
 
+  def feed(name: String, zookeeper: String) = WebSocket.using[String] { request =>
+
+    val topicCountMap = new util.HashMap[EventHandler[String, String], Integer]()
+    val consumer = Consumer.create(createConsumerConfig(models.Zookeeper.findById(zookeeper).get.toString, "1234"))
+    val zkClient = Registry.lookupObject(PropertyConstants.ZookeeperConnections).get.asInstanceOf[Map[String, ZkClient]](models.Zookeeper.findById(zookeeper).get.name)
+
+    val out = Concurrent.unicast[String] { channel: Concurrent.Channel[String] =>
+
+      val cb = (messageHolder: MessageAndMetadata[String, String]) => {
+        play.Logger.error(messageHolder.message)
+        channel.push(messageHolder.message)
+      }
+
+      getZChildren(zkClient, "/brokers/topics/" + name + "/partitions/*").map { p =>
+        for (n <- 0 to p.size - 1) {
+          topicCountMap.put(new EventHandler(name, cb), n)
+        }
+
+        consumer.createMessageStreams(topicCountMap, new StringDecoder(), new StringDecoder())
+      }
+
+    }
+
+    val in = Iteratee.foreach[String](println).map { _ =>
+      consumer.commitOffsets()
+      consumer.shutdown()
+    }
+
+    (in, out)
+  }
+
+
   private def getTopic(name: String, zookeeper: JsValue) = {
     val connectedZks = connectedZookeepers((z, c) => (z, c)).filter(_._1.name == (zookeeper \ "zookeeper").as[String])
 
     if (connectedZks.size > 0) {
       val (_, zkClient) = connectedZks.head
       val partitionsOffsetsAndConsumersFuture = for {
-        // it's possible that a offset dir hasn't been created yet for this consumer
+      // it's possible that a offset dir hasn't been created yet for some consumers
         ownedTopicNodes <- getZChildren(zkClient, "/consumers/*/owners/" + name)
 
         allConsumers = ownedTopicNodes.map(n => n.path.split("/").filter(_ != "")(1))
@@ -93,6 +135,17 @@ object Topic extends Controller {
     else {
       Future(Ok(Json.toJson(List[String]())))
     }
+  }
+
+  private def createConsumerConfig(a_zookeeper: String, a_groupId: String): ConsumerConfig = {
+    val props = new Properties();
+    props.put("zookeeper.connect", a_zookeeper);
+    props.put("group.id", a_groupId);
+    props.put("zookeeper.session.timeout.ms", "400");
+    props.put("zookeeper.sync.time.ms", "200");
+    props.put("auto.commit.interval.ms", "1000");
+
+    return new ConsumerConfig(props);
   }
 
 }

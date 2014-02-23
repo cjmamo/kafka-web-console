@@ -1,6 +1,8 @@
-app.controller("ZookeepersController", function ($scope, $http, feedService) {
+app.controller("ZookeepersController", function ($scope, $http, $location, $rootScope) {
 
-    feedService.onmessage = function (message) {
+    var ws = new WebSocket('ws://' + $location.host() + ':' + $location.port() + '/zookeepers.json/feed');
+
+    ws.onmessage = function (message) {
         var serverZookeeper = angular.fromJson(message.data);
         var isNewZookeeper = true;
 
@@ -21,6 +23,10 @@ app.controller("ZookeepersController", function ($scope, $http, feedService) {
 
         $scope.$apply();
     };
+
+    $scope.$on('$destroy', function () {
+        ws.close()
+    });
 
     $scope.getZookeepers = function (group) {
         $http.get('/zookeepers.json', {params: {group: group}}).
@@ -44,12 +50,22 @@ app.controller("TopicsController", function ($scope, $location, $http, topicServ
     $scope.getTopic = function (topic) {
         $http.post('/topics.json/' + topic.name, {zookeeper: topic.zookeeper}).success(function (data, status, headers, config) {
             topicService.setTopic(data)
+            topicService.setZookeeper(topic.zookeeper)
             $location.path('/topics/' + topic.name);
         });
     };
 });
 
-app.controller("TopicController", function ($scope, topicService) {
+app.controller("TopicController", function ($scope, topicService, $location, $routeParams) {
+    var ws = new WebSocket('ws://' + $location.host() + ':' + $location.port() + '/topics.json/' + $routeParams.name + '/feed/' + topicService.getZookeeper());
+    ws.onmessage = function (message) {
+        var p = angular.element("<p />");
+        p.text(message.data);
+        $("#feed").append(p)
+        $scope.$apply();
+    }
+
+
     var maxPartitionCount = 0;
     $scope.topic = topicService.getTopic();
     angular.forEach($scope.topic, function (consumer) {
@@ -62,9 +78,9 @@ app.controller("TopicController", function ($scope, topicService) {
 
     $scope.maxPartitionCount = new Array(maxPartitionCount)
 
-    $scope.getTopicFeed = function (topic) {
-        $location.path('/consumergroups/zookeeper/' + zookeeper + '/topic/' + topic);
-    };
+    $scope.$on('$destroy', function () {
+        ws.close();
+    });
 });
 
 app.controller("BrokersController", function ($scope, $http) {

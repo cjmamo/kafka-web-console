@@ -41,6 +41,7 @@ app.run(function ($rootScope, $location) {
 
 app.service('topicService', function () {
     var topic_ = "";
+    var zookeeper_ = "";
 
     this.setTopic = function (topic) {
         topic_ = topic;
@@ -49,15 +50,23 @@ app.service('topicService', function () {
     this.getTopic = function () {
         return topic_;
     };
+
+    this.setZookeeper = function (zookeeper) {
+        zookeeper_ = zookeeper;
+    };
+
+    this.getZookeeper = function () {
+        return zookeeper_;
+    };
 });
 
-app.service('feedService', function ($location) {
-    ws = new WebSocket('ws://' + $location.host() + ':' + $location.port() + '/feed');
-    return ws
-});
+//app.service('feedService', function ($location) {
+//    ws = new WebSocket('ws://' + $location.host() + ':' + $location.port() + '/feed');
+//    return ws
+//});
 
-app.filter('reverse', function() {
-    return function(items) {
+app.filter('reverse', function () {
+    return function (items) {
         return items.slice().reverse();
     };
 });

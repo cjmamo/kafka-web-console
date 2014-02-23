@@ -228,7 +228,7 @@ private[kafka] class ZookeeperConsumerConnector(val config: ConsumerConfig,
     }
   }
 
-  override def commitOffsets() {
+  override def  commitOffsets() {
     if (zkClient == null) {
       error("zk client is null. Cannot commit offsets")
       return

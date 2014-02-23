@@ -1,15 +1,12 @@
 package controllers
 
 import play.api.mvc._
-import play.api.mvc.Results._
-import java.util.Properties
-import kafka.consumer.ConsumerConfig
 import play.api.data.{Form, Forms}
 import play.api.libs.json.Json
-import kafka.javaapi.consumer.AsyncConsumerConnector
 import common.{Message, Registry}
 import Registry.PropertyConstants
 import akka.actor.ActorRef
+import play.api.libs.iteratee.{Concurrent, Enumerator, Iteratee}
 
 
 object Zookeeper extends Controller {
@@ -56,5 +53,17 @@ object Zookeeper extends Controller {
       )
 
       result
+  }
+
+  def feed() = WebSocket.using[String] { implicit request =>
+
+    val in = Iteratee.ignore[String]
+
+    val out = Registry.lookupObject(PropertyConstants.BroadcastChannel) match {
+      case Some(broadcastChannel: (Enumerator[String], Concurrent.Channel[String])) => broadcastChannel._1
+      case _ => Enumerator.empty[String]
+    }
+
+    (in, out)
   }
 }
