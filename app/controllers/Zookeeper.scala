@@ -22,37 +22,36 @@ object Zookeeper extends Controller {
     Ok(Json.toJson(zookeepers))
   }
 
-  def create() = Action {
-    implicit request =>
-      val result = Form(zookeeperForm).bindFromRequest.fold(
-        formFailure => {
-          BadRequest
-        },
-        formSuccess => {
+  def create() = Action { implicit request =>
+    val result = Form(zookeeperForm).bindFromRequest.fold(
+      formFailure => {
+        BadRequest
+      },
+      formSuccess => {
 
-          val name: String = formSuccess._1
-          val host: String = formSuccess._2
-          val port: Int = formSuccess._3
+        val name: String = formSuccess._1
+        val host: String = formSuccess._2
+        val port: Int = formSuccess._3
 
-          val zk = models.Zookeeper.insert(models.Zookeeper(name, host, port, models.Group.findByName("ALL").get.id, models.Status.Disconnected.id))
+        val zk = models.Zookeeper.insert(models.Zookeeper(name, host, port, models.Group.findByName("ALL").get.id, models.Status.Disconnected.id))
 
-          try {
-            Registry.lookupObject(PropertyConstants.Router) match {
-              case Some(router: ActorRef) => router ! Message.Connect(zk)
-              case _ =>
-            }
-
-            Ok
-          }
-          catch {
-            case e: Exception => BadRequest
+        try {
+          Registry.lookupObject(PropertyConstants.Router) match {
+            case Some(router: ActorRef) => router ! Message.Connect(zk)
+            case _ =>
           }
 
+          Ok
+        }
+        catch {
+          case e: Exception => BadRequest
         }
 
-      )
+      }
 
-      result
+    )
+
+    result
   }
 
   def feed() = WebSocket.using[String] { implicit request =>
@@ -60,7 +59,7 @@ object Zookeeper extends Controller {
     val in = Iteratee.ignore[String]
 
     val out = Registry.lookupObject(PropertyConstants.BroadcastChannel) match {
-      case Some(broadcastChannel: (Enumerator[String], Concurrent.Channel[String])) => broadcastChannel._1
+      case Some(broadcastChannel: (Enumerator[_], Concurrent.Channel[_])) => broadcastChannel._1.asInstanceOf[Enumerator[String]]
       case _ => Enumerator.empty[String]
     }
 
