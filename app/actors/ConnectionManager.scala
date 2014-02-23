@@ -1,6 +1,6 @@
 package actors
 
-import core.{Message, Registry}
+import common.{Message, Registry}
 import Registry.PropertyConstants
 import models.{Status, Zookeeper}
 import akka.actor.{ActorRef, Actor}
@@ -17,7 +17,7 @@ import akka.actor.Terminated
 import scala.Some
 import org.apache.zookeeper.Watcher.Event.KeeperState
 import scala.concurrent.Await
-import core.Util
+import common.Util
 
 class ConnectionManager() extends Actor {
 

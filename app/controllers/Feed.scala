@@ -2,10 +2,10 @@ package controllers
 
 import play.api.mvc.{WebSocket, Controller}
 import play.api.libs.iteratee.{Concurrent, Enumerator, Iteratee}
-import core.Registry
+import common.Registry
 import Registry.PropertyConstants
 import akka.actor.ActorRef
-import core.Registry
+import common.Registry
 
 object Feed extends Controller {
 

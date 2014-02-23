@@ -7,7 +7,7 @@ import kafka.consumer.ConsumerConfig
 import play.api.data.{Form, Forms}
 import play.api.libs.json.Json
 import kafka.javaapi.consumer.AsyncConsumerConnector
-import core.{Message, Registry}
+import common.{Message, Registry}
 import Registry.PropertyConstants
 import akka.actor.ActorRef
 

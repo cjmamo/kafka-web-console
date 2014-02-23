@@ -1,9 +1,9 @@
-package core
+package common
 
 import scala.concurrent.{Future, Promise}
 import com.twitter.util.{Throw, Return}
 import com.twitter.zk.{ZNode, ZkClient}
-import core.Registry.PropertyConstants
+import common.Registry.PropertyConstants
 import models.Zookeeper
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import org.apache.zookeeper.KeeperException.NoNodeException

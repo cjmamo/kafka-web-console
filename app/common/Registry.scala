@@ -1,6 +1,6 @@
-package core
+package common
 
-import core.Registry.PropertyConstants.PropertyConstants
+import common.Registry.PropertyConstants.PropertyConstants
 
 object Registry {
 

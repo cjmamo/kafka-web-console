@@ -1,7 +1,7 @@
 package actors
 
 import akka.actor.{Terminated, Actor}
-import core.{Message, Registry}
+import common.{Message, Registry}
 import Registry.PropertyConstants
 import play.api.libs.iteratee.{Concurrent, Enumerator}
 import models.{Status, Zookeeper}

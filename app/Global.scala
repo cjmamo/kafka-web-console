@@ -1,6 +1,6 @@
 
 import akka.actor.{Terminated, Props, ActorRef}
-import core.{Message, Registry}
+import common.{Message, Registry}
 import actors._
 import org.squeryl.adapters.H2Adapter
 import org.squeryl.{Session, SessionFactory}

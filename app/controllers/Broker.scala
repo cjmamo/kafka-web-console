@@ -3,7 +3,7 @@ package controllers
 import play.api.mvc.{Action, Controller}
 import scala.concurrent.Future
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import core.Util._
+import common.Util._
 import play.api.libs.json.{Writes, Json}
 import scala.Some
 

@@ -6,7 +6,7 @@ import org.squeryl.dsl.{CompositeKey, CompositeKey2, CompositeKey3}
 import play.api.libs.json._
 import models.Database._
 import scala.collection.Iterable
-import core.Registry
+import common.Registry
 import org.squeryl.annotations.Column
 
 object Zookeeper {
