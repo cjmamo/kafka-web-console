@@ -7,8 +7,8 @@ import scala.collection.Iterable
 object Status extends Enumeration {
   type Status = Value
 
-  val Connected = Value("CONNECTED")
   val Disconnected = Value("DISCONNECTED")
+  val Connected = Value("CONNECTED")
 
 }
 

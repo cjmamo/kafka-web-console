@@ -1,51 +1,4 @@
-var app = angular.module('app', ['ngRoute', 'ui.bootstrap'], function ($httpProvider) {
-
-        $httpProvider.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=utf-8';
-        $httpProvider.defaults.headers.common['Accept'] = 'text/html';
-
-        $httpProvider.defaults.transformRequest = [function (data) {
-            /**
-             * The workhorse; converts an object to x-www-form-urlencoded serialization.
-             * @param {Object} obj
-             * @return {String}
-             */
-            var param = function (obj) {
-                var query = '';
-                var name, value, fullSubName, subName, subValue, innerObj, i;
-
-                for (name in obj) {
-                    value = obj[name];
-
-                    if (value instanceof Array) {
-                        for (i = 0; i < value.length; ++i) {
-                            subValue = value[i];
-                            fullSubName = name + '[' + i + ']';
-                            innerObj = {};
-                            innerObj[fullSubName] = subValue;
-                            query += param(innerObj) + '&';
-                        }
-                    }
-                    else if (value instanceof Object) {
-                        for (subName in value) {
-                            subValue = value[subName];
-                            fullSubName = name + '[' + subName + ']';
-                            innerObj = {};
-                            innerObj[fullSubName] = subValue;
-                            query += param(innerObj) + '&';
-                        }
-                    }
-                    else if (value !== undefined && value !== null) {
-                        query += encodeURIComponent(name) + '=' + encodeURIComponent(value) + '&';
-                    }
-                }
-
-                return query.length ? query.substr(0, query.length - 1) : query;
-            };
-
-            return angular.isObject(data) && String(data) !== '[object File]' ? param(data) : data;
-        }];
-    }
-)
+var app = angular.module('app', ['ngRoute', 'ui.bootstrap'])
     .config(function ($routeProvider) {
         $routeProvider
             .when('/zookeepers', {
@@ -56,14 +9,23 @@ var app = angular.module('app', ['ngRoute', 'ui.bootstrap'], function ($httpProv
                 controller: 'TopicsController',
                 templateUrl: '/topics'
             })
+//            .when('/topics/:name/:zookeeper', {
+//                controller: 'TopicsController'
+//                template: function($scope) {
+//                    alert($scope.zookeeper)
+//                    window.location.hash = '/topics/' + $scope.name
+//                    return "assdds"
+//                }
+//                templateUrl: '/topics'
+//            })
             .when('/brokers', {
                 controller: 'BrokersController',
                 templateUrl: '/brokers'
             })
-            .when('/consumergroups/zookeeper/:zookeeper/topic/:topic', {
-                controller: 'ConsumerGroupsController',
+            .when('/topics/:name', {
+                controller: 'TopicController',
                 templateUrl: function (params) {
-                    return '/consumergroups/zookeeper/' + params.zookeeper + '/topic/' + params.topic
+                    return '/topics/' + params.name
                 }
             })
             .otherwise({
@@ -71,20 +33,31 @@ var app = angular.module('app', ['ngRoute', 'ui.bootstrap'], function ($httpProv
             });
     });
 
-app.run(function ($rootScope, $templateCache, $location) {
-    $rootScope.$on('$routeChangeStart', function (event, next, current) {
-        if (typeof(current) !== 'undefined') {
-            $templateCache.remove(current.templateUrl);
-        }
-    });
-
-    $rootScope.isActive = function(route) {
+app.run(function ($rootScope, $location) {
+    $rootScope.isActive = function (route) {
         return route === $location.path();
     };
 });
 
+app.service('topicService', function () {
+    var topic_ = "";
+
+    this.setTopic = function (topic) {
+        topic_ = topic;
+    };
+
+    this.getTopic = function () {
+        return topic_;
+    };
+});
 
 app.service('feedService', function ($location) {
     ws = new WebSocket('ws://' + $location.host() + ':' + $location.port() + '/feed');
     return ws
+});
+
+app.filter('reverse', function() {
+    return function(items) {
+        return items.slice().reverse();
+    };
 });

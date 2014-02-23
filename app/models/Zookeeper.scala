@@ -41,7 +41,6 @@ object Zookeeper {
   //  }
 
   def upsert(zookeeper: Zookeeper) = inTransaction {
-//    zookeepersTable.insertOrUpdate(zookeeper)
     val zkCount = from(zookeepersTable)(z => where(zookeeper.name === z.name) select (z)).toList.size
     zkCount match {
       case 1 => this.update(zookeeper)
@@ -56,6 +55,12 @@ object Zookeeper {
 
   def update(zookeeper: Zookeeper) = inTransaction {
     zookeepersTable.update(zookeeper)
+  }
+
+  def update(zookeepers: Iterable[Zookeeper]) {
+    inTransaction {
+      zookeepersTable.update(zookeepers)
+    }
   }
 }
 

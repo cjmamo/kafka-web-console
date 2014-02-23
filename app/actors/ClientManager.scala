@@ -1,7 +1,7 @@
 package actors
 
 import akka.actor.Actor
-import core.Registry
+import core.{Message, Registry}
 import Registry.PropertyConstants
 import play.api.libs.iteratee.{Concurrent, Enumerator}
 import play.api.libs.json.Json

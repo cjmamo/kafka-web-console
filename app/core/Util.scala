@@ -1,14 +1,12 @@
-package util
+package core
 
 import scala.concurrent.{Future, Promise}
 import com.twitter.util.{Throw, Return}
 import com.twitter.zk.{ZNode, ZkClient}
-import core.Registry
 import core.Registry.PropertyConstants
 import models.Zookeeper
-import scala.util.{Try, Success, Failure}
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import org.apache.zookeeper.KeeperException.{Code, NoNodeException}
+import org.apache.zookeeper.KeeperException.NoNodeException
 
 object Util {
   def twitterToScalaFuture[A](twitterFuture: com.twitter.util.Future[A]): Future[A] = {
@@ -20,19 +18,15 @@ object Util {
     promise.future
   }
 
-  def connectedZookeepers[A](block: (Zookeeper, ZkClient) => A): Option[List[A]] = {
+  def connectedZookeepers[A](block: (Zookeeper, ZkClient) => A): List[A] = {
     val connectedZks = models.Zookeeper.findByStatusId(models.Status.Connected.id)
 
     val zkConnections: Map[String, ZkClient] = Registry.lookupObject(PropertyConstants.ZookeeperConnections) match {
-      case c: Some[Map[String, ZkClient]] if connectedZks.size > 0 => c.get
+      case Some(s: Map[_, _]) if connectedZks.size > 0 => s.asInstanceOf[Map[String, ZkClient]]
+      case _ => Map()
     }
 
-    if (connectedZks.size > 0) {
-      Option(connectedZks.map(zk => block(zk, zkConnections.get(zk.id).get)).toList)
-    }
-    else {
-      None
-    }
+    connectedZks.map(zk => block(zk, zkConnections.get(zk.id).get)).toList
   }
 
   def getZChildren(zkClient: ZkClient, path: String): Future[Seq[ZNode]] = {
@@ -61,12 +55,8 @@ object Util {
         case e: NoNodeException => Nil
       }
     }
-    case head :: tail => {
-      getZChildren(zNode(head), tail)
-    }
-    case Nil => {
-      Future(Seq(zNode))
-    }
+    case head :: tail => getZChildren(zNode(head), tail)
+    case Nil => Future(Seq(zNode))
   }
 
 }

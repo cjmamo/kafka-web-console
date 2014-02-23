@@ -1,0 +1,24 @@
+<tabset>
+    <tab heading="Consumer Groups">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+
+                <th>Consumer</th>
+                <th colspan=3>Partition Offsets</th>
+                <tr>
+                    <th colspan=1></th>
+                    <th data-ng-repeat="partitionNo in maxPartitionCount track by $index">{{$index}}</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr data-ng-repeat="consumer in topic">
+                    <td>{{consumer.consumerGroup}}</td>
+                    <td data-ng-repeat="offset in consumer.offsets | reverse">{{offset.offset}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </tab>
+    <tab heading="Topic Feed"></tab>
+</tabset>

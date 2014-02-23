@@ -7,10 +7,9 @@ import kafka.consumer.ConsumerConfig
 import play.api.data.{Form, Forms}
 import play.api.libs.json.Json
 import kafka.javaapi.consumer.AsyncConsumerConnector
-import core.Registry
+import core.{Message, Registry}
 import Registry.PropertyConstants
 import akka.actor.ActorRef
-import actors.Message
 
 
 object Zookeeper extends Controller {
@@ -21,20 +20,9 @@ object Zookeeper extends Controller {
     "port" -> Forms.number
   )
 
-  def index(group: String) = Action {
-    implicit request =>
-
-      val zookeepers = models.Group.findByName(group).get.zookeepers
-
-      render {
-        case Accepts.Html() => {
-          Ok(views.html.zookeeper.index(Form(zookeeperForm)))
-        }
-        case Accepts.Json() => {
-          Ok(Json.toJson(zookeepers))
-        }
-      }
-
+  def index(group: String) = Action { implicit request =>
+    val zookeepers = models.Group.findByName(group).get.zookeepers
+    Ok(Json.toJson(zookeepers))
   }
 
   def create() = Action {

@@ -1,0 +1,16 @@
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead>
+        <th>Zookeeper</th>
+        <th>Topic</th>
+        <th>Partitions</th>
+        </thead>
+        <tbody>
+        <tr data-ng-repeat="topic in topics" ng-click="getTopic(topic);">
+            <td>{{topic.zookeeper}}</td>
+            <td>{{topic.name}}</td>
+            <td>{{topic.partitions.length}}</td>
+        </tr>
+        </tbody>
+    </table>
+</div>

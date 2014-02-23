@@ -10,7 +10,7 @@ app.controller("ZookeepersController", function ($scope, $http, feedService) {
                     isNewZookeeper = false;
                 }
             }
-        )
+        );
 
         if (isNewZookeeper && typeof($scope.zookeepers) !== 'undefined') {
             $scope.zookeepers.push(serverZookeeper);
@@ -20,50 +20,56 @@ app.controller("ZookeepersController", function ($scope, $http, feedService) {
         }
 
         $scope.$apply();
-    }
-
-    $scope.getZookeepers = function (group) {
-        $http.get('/zookeepers', {params: {group: group}, headers: {Accept: 'application/json'}}).
-            success(function (data, status, headers, config) {
-                $scope.zookeepers = angular.fromJson(data);
-            })
-    }
-
-    $scope.createZookeeper = function (zookeeper) {
-        $http.post('/zookeepers', { name: zookeeper.name, host: zookeeper.host, port: zookeeper.port});
-    }
-
-});
-
-app.controller("TopicsController", function ($scope, $location) {
-    $scope.getConsumerGroup = function (zookeeper, topic) {
-        $location.path('/consumergroups/zookeeper/' + zookeeper + '/topic/' + topic)
-    }
-});
-
-app.controller("ConsumerGroupsController", function ($scope) {
-});
-
-app.controller("BrokersController", function ($scope) {
-
-
-    $scope.activate = function () {
-        alert('asd')
-        $scope.isActive = true;
     };
 
+    $scope.getZookeepers = function (group) {
+        $http.get('/zookeepers.json', {params: {group: group}}).
+            success(function (data, status, headers, config) {
+                $scope.zookeepers = angular.fromJson(data);
+            });
+    };
 
+    $scope.createZookeeper = function (zookeeper) {
+        $http.post('/zookeepers.json', { name: zookeeper.name, host: zookeeper.host, port: zookeeper.port});
+    };
 
-//    $scope.isActive = true;
-////    $scope.globalContext = globalContext;
-//
-////    alert($location.path())
-//    $scope.locationPath = $location.path()
-////  alert($scope.locationPath)
-//
-//    $scope.isActive = function (route) {
-//        alert("ASd")
-//        return route === $location.path();
-//    };
+});
 
+app.controller("TopicsController", function ($scope, $location, $http, topicService) {
+    $http.get('/topics.json').
+        success(function (data, status, headers, config) {
+            $scope.topics = data
+        });
+
+    $scope.getTopic = function (topic) {
+        $http.post('/topics.json/' + topic.name, {zookeeper: topic.zookeeper}).success(function (data, status, headers, config) {
+            topicService.setTopic(data)
+            $location.path('/topics/' + topic.name);
+        });
+    };
+});
+
+app.controller("TopicController", function ($scope, topicService) {
+    var maxPartitionCount = 0;
+    $scope.topic = topicService.getTopic();
+    angular.forEach($scope.topic, function (consumer) {
+        maxPartitionCount = consumer.offsets.length;
+
+        if (maxPartitionCount < consumer.offsets.length) {
+            maxPartitionCount = consumer.offsets.length;
+        }
+    });
+
+    $scope.maxPartitionCount = new Array(maxPartitionCount)
+
+    $scope.getTopicFeed = function (topic) {
+        $location.path('/consumergroups/zookeeper/' + zookeeper + '/topic/' + topic);
+    };
+});
+
+app.controller("BrokersController", function ($scope, $http) {
+    $http.get('/brokers.json').
+        success(function (data, status, headers, config) {
+            $scope.brokers = data
+        });
 });
