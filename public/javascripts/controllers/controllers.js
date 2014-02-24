@@ -9,13 +9,13 @@ app.controller("ZookeepersController", function ($scope, $http, $location) {
     ];
 
     $scope.zookeeper = {};
-    $scope.zookeeper.group = $scope.groups[0]
+    $scope.zookeeper.group = $scope.groups[0];
 
     var ws = new WebSocket('ws://' + $location.host() + ':' + $location.port() + '/zookeepers.json/feed');
 
     ws.onmessage = function (message) {
         var serverZookeeper = angular.fromJson(message.data);
-        var modelName = angular.lowercase(serverZookeeper.group) + 'Zookeepers'
+        var modelName = angular.lowercase(serverZookeeper.group) + 'Zookeepers';
         var isNewZookeeper = true;
 
         angular.forEach($scope[modelName], function (clientZookeeper) {
@@ -49,7 +49,7 @@ app.controller("ZookeepersController", function ($scope, $http, $location) {
 
     $scope.createZookeeper = function (zookeeper) {
         $http.post('/zookeepers.json', { name: zookeeper.name, host: zookeeper.host, port: zookeeper.port, group: zookeeper.group.name}).success(function () {
-            $location.path("/")
+            $location.path("/");
         });
     };
 });
@@ -57,13 +57,13 @@ app.controller("ZookeepersController", function ($scope, $http, $location) {
 app.controller("TopicsController", function ($scope, $location, $http, topicService) {
     $http.get('/topics.json').
         success(function (data, status, headers, config) {
-            $scope.topics = data
+            $scope.topics = data;
         });
 
     $scope.getTopic = function (topic) {
         $http.get('/topics.json/' + topic.name + '/' + topic.zookeeper).success(function (data, status, headers, config) {
-            topicService.setTopic(data)
-            topicService.setZookeeper(topic.zookeeper)
+            topicService.setTopic(data);
+            topicService.setZookeeper(topic.zookeeper);
             $location.path('/topics/' + topic.name + '/' + topic.zookeeper);
         });
     };
@@ -74,7 +74,7 @@ app.controller("TopicController", function ($scope, topicService, $location, $ro
     ws.onmessage = function (message) {
         var p = angular.element("<p />");
         p.text(message.data);
-        $("#topic-feed").append(p)
+        $("#topic-feed").append(p);
         $scope.$apply();
     }
 
@@ -89,8 +89,7 @@ app.controller("TopicController", function ($scope, topicService, $location, $ro
         }
     });
 
-    console.log(maxPartitionCount)
-    $scope.maxPartitionCount = new Array(maxPartitionCount)
+    $scope.maxPartitionCount = new Array(maxPartitionCount);
 
     $scope.$on('$destroy', function () {
         ws.close();
@@ -100,6 +99,6 @@ app.controller("TopicController", function ($scope, topicService, $location, $ro
 app.controller("BrokersController", function ($scope, $http) {
     $http.get('/brokers.json').
         success(function (data, status, headers, config) {
-            $scope.brokers = data
+            $scope.brokers = data;
         });
 });

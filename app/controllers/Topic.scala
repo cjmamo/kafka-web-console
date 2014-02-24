@@ -114,10 +114,7 @@ object Topic extends Controller {
       }
 
       getZChildren(zkClient, "/brokers/topics/" + name + "/partitions/*").map { p =>
-        for (n <- 0 to p.size - 1) {
-          topicCountMap.put(new EventHandler(name, cb), n)
-        }
-
+        topicCountMap.put(new EventHandler(name, cb), p.size)
         consumer.createMessageStreams(topicCountMap, new StringDecoder(), new StringDecoder())
       }
 
