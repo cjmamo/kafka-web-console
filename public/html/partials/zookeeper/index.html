@@ -102,43 +102,59 @@
         </div>
     </tab>
     <tab heading="Register Zookeeper">
-        <form role="form" data-ng-submit="createZookeeper(zookeeper)">
-            <div class="form-group">
-                <dl id="name_field">
-                    <dt><label for="name">Name</label></dt>
-                    <dd>
-                        <input type="text" id="name" name="name" required="true" data-ng-model="zookeeper.name">
-                    </dd>
-                </dl>
-                <dl id="host_field">
-                    <dt><label for="host">Host</label></dt>
-                    <dd>
-                        <input type="text" id="host" name="host" required="true" data-ng-model="zookeeper.host">
-                    </dd>
-                </dl>
-                <dl id="port_field">
-                    <dt><label for="port">Port</label></dt>
-                    <dd>
-                        <input type="number" id="port" name="port" data-ng-model="zookeeper.port" required="true">
-                    </dd>
-                </dl>
-                <dl id="consumer_group_field">
-                    <dt><label for="consumer_group">Consumer Group</label></dt>
-                    <dd>
-                        <input type="text" id="consumer_group" name="consumer_group" required="true"
-                               data-ng-model="zookeeper.consumerGroup">
-                    </dd>
-                </dl>
-                <dl id="group_field">
-                    <dt><label for="group">Group</label></dt>
-                    <dd>
-                        <select data-ng-model="zookeeper.group" data-ng-required="true" data-ng-options="g.name for g in groups" id="group">
-                        </select>
-                    </dd>
-                </dl>
+
+        <form role="form" class="zookeeper-form" name="zookeeperForm" data-ng-submit="createZookeeper(zookeeper)" novalidate>
+            <div class="form-group"
+                 data-ng-class="{ 'has-error' : zookeeperForm.name.$invalid && !zookeeperForm.name.$pristine }">
+                <label for="name">Name</label>
+                <input data-ng-required="true" type="text" id="name" name="name" data-ng-model="zookeeper.name"
+                       class="form-control">
+
+                <p data-ng-show="zookeeperForm.name.$invalid && !zookeeperForm.name.$pristine" class="help-block">A name
+                    for Zookeeper is required.</p>
             </div>
-            <button class="btn btn-default">Connect</button>
+            <div class="form-group"
+                 data-ng-class="{ 'has-error' : zookeeperForm.host.$invalid && !zookeeperForm.host.$pristine }">
+                <label for="host">Host</label>
+                <input type="text" id="host"
+                       data-ng-pattern="/^(?=.{1,255}$)[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?(?:\.[0-9A-Za-z](?:(?:[0-9A-Za-z]|-){0,61}[0-9A-Za-z])?)*\.?$/"
+                       name="host" data-ng-required="true" data-ng-model="zookeeper.host" class="form-control">
+
+                <p data-ng-show="zookeeperForm.host.$invalid && !zookeeperForm.host.$error.pattern && !zookeeperForm.host.$pristine"
+                   class="help-block">Hostname is required.</p>
+
+                <p data-ng-show="zookeeperForm.host.$error.pattern && !zookeeperForm.host.$pristine" class="help-block">
+                    Hostname must be in a valid format.</p>
+            </div>
+            <div class="form-group"
+                 data-ng-class="{ 'has-error' : zookeeperForm.port.$invalid && !zookeeperForm.port.$pristine }">
+                <label for="port">Port</label>
+                <input type="number" id="port" name="port" data-ng-model="zookeeper.port"
+                       data-ng-required="true" class="form-control">
+
+                <p data-ng-show="zookeeperForm.port.$invalid && !zookeeperForm.port.$pristine" class="help-block">Port
+                    number is invalid.</p>
+            </div>
+            <div class="form-group"
+                 data-ng-class="{ 'has-error' : zookeeperForm.consumer_group.$invalid && !zookeeperForm.consumer_group.$pristine }">
+                <label for="consumer_group">Consumer Group</label>
+                <input type="text" id="consumer_group" name="consumer_group" data-ng-required="true"
+                       data-ng-model="zookeeper.consumerGroup" class="form-control">
+
+                <p data-ng-show="zookeeperForm.consumer_group.$invalid && !zookeeperForm.consumer_group.$pristine"
+                   class="help-block">A consumer group name is required.</p>
+            </div>
+            <div class="form-group">
+                <label for="group">Group</label>
+                <select data-ng-model="zookeeper.group" data-ng-required="true"
+                        data-ng-options="g.name for g in groups" id="group" class="form-control">
+                </select>
+            </div>
+            <p class="text-center">
+                <button class="btn btn-large btn-primary" data-ng-disabled="zookeeperForm.$invalid">Connect</button>
+            </p>
         </form>
+        </div>
     </tab>
 </tabset>
 

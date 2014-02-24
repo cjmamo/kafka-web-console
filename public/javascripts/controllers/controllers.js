@@ -48,9 +48,10 @@ app.controller("ZookeepersController", function ($scope, $http, $location) {
     };
 
     $scope.createZookeeper = function (zookeeper) {
-        $http.post('/zookeepers.json', { name: zookeeper.name, host: zookeeper.host, port: zookeeper.port, consumer_group: zookeeper.consumerGroup, group: zookeeper.group.name});
+        $http.post('/zookeepers.json', { name: zookeeper.name, host: zookeeper.host, port: zookeeper.port, consumer_group: zookeeper.consumerGroup, group: zookeeper.group.name}).success(function () {
+            $location.path("/")
+        });
     };
-
 });
 
 app.controller("TopicsController", function ($scope, $location, $http, topicService) {

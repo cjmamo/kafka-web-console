@@ -101,7 +101,8 @@ object Topic extends Controller {
   def feed(name: String, zookeeper: String) = WebSocket.using[String] { implicit request =>
 
     val topicCountMap = new util.HashMap[EventHandler[String, String], Integer]()
-    val consumer = Consumer.create(createConsumerConfig(models.Zookeeper.findById(zookeeper).get.toString, "1234"))
+    val zk = models.Zookeeper.findById(zookeeper).get
+    val consumer = Consumer.create(createConsumerConfig(zk.toString, zk.consumerGroup))
     val zkClient = Registry.lookupObject(PropertyConstants.ZookeeperConnections).get.asInstanceOf[Map[String, ZkClient]](models.Zookeeper.findById(zookeeper).get.name)
 
     val out = Concurrent.unicast[String] { channel: Concurrent.Channel[String] =>

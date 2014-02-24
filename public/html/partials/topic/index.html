@@ -6,7 +6,7 @@
         <th>Partitions</th>
         </thead>
         <tbody>
-        <tr data-ng-repeat="topic in topics" ng-click="getTopic(topic);">
+        <tr class="topic" data-ng-repeat="topic in topics" ng-click="getTopic(topic);">
             <td>{{topic.zookeeper}}</td>
             <td>{{topic.name}}</td>
             <td>{{topic.partitions.length}}</td>
