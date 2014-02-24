@@ -74,7 +74,7 @@ app.controller("TopicController", function ($scope, topicService, $location, $ro
     ws.onmessage = function (message) {
         var p = angular.element("<p />");
         p.text(message.data);
-        $("#feed").append(p)
+        $("#topic-feed").append(p)
         $scope.$apply();
     }
 
