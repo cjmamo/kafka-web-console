@@ -14,7 +14,7 @@ GET         /topics                                   controllers.Assets.at(path
 GET         /topics.json                              controllers.Topic.index()
 GET         /topics.json/:name/:zookeeper             controllers.Topic.show(name, zookeeper)
 GET         /topics.json/:name/:zookeeper/feed        controllers.Topic.feed(name, zookeeper)
-GET         /topics/:name                             controllers.IgnoreParamAssets.at(path="/public", file="/html/partials/topic/show.html", name)
+GET         /topics/:name/:zookeeper                  controllers.IgnoreParamAssets.at(path="/public", file="/html/partials/topic/show.html", name, zookeeper)
 
 GET         /groups                                   controllers.Group.index()
 

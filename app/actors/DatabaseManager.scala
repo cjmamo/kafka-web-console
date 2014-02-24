@@ -15,7 +15,7 @@ class DatabaseManager extends Actor {
       Zookeeper.upsert(zk)
     }
     case Terminated => {
-      Zookeeper.update(Zookeeper.findAll.map(z => Zookeeper(z.id, z.host, z.port, z.groupId, Status.Disconnected.id, z.consumerGroup)))
+      Zookeeper.update(Zookeeper.findAll.map(z => Zookeeper(z.id, z.host, z.port, z.groupId, Status.Disconnected.id)))
     }
   }
 

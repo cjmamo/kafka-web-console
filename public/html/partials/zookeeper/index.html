@@ -135,15 +135,6 @@
                 <p data-ng-show="zookeeperForm.port.$invalid && !zookeeperForm.port.$pristine" class="help-block">Port
                     number is invalid.</p>
             </div>
-            <div class="form-group"
-                 data-ng-class="{ 'has-error' : zookeeperForm.consumer_group.$invalid && !zookeeperForm.consumer_group.$pristine }">
-                <label for="consumer_group">Consumer Group</label>
-                <input type="text" id="consumer_group" name="consumer_group" data-ng-required="true"
-                       data-ng-model="zookeeper.consumerGroup" class="form-control">
-
-                <p data-ng-show="zookeeperForm.consumer_group.$invalid && !zookeeperForm.consumer_group.$pristine"
-                   class="help-block">A consumer group name is required.</p>
-            </div>
             <div class="form-group">
                 <label for="group">Group</label>
                 <select data-ng-model="zookeeper.group" data-ng-required="true"

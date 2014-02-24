@@ -17,6 +17,7 @@ import kafka.consumer.async.Consumer
 import kafka.consumer.ConsumerConfig
 import java.util.Properties
 import com.twitter.zk.ZkClient
+import scala.util.Random
 
 object Topic extends Controller {
 
@@ -102,13 +103,13 @@ object Topic extends Controller {
 
     val topicCountMap = new util.HashMap[EventHandler[String, String], Integer]()
     val zk = models.Zookeeper.findById(zookeeper).get
-    val consumer = Consumer.create(createConsumerConfig(zk.toString, zk.consumerGroup))
+    val consumerGroup = "web-console-consumer-" + Random.nextInt(100000)
+    val consumer = Consumer.create(createConsumerConfig(zk.toString, consumerGroup))
     val zkClient = Registry.lookupObject(PropertyConstants.ZookeeperConnections).get.asInstanceOf[Map[String, ZkClient]](models.Zookeeper.findById(zookeeper).get.name)
 
     val out = Concurrent.unicast[String] { channel: Concurrent.Channel[String] =>
 
       val cb = (messageHolder: MessageAndMetadata[String, String]) => {
-        play.Logger.error(messageHolder.message)
         channel.push(messageHolder.message)
       }
 
@@ -125,6 +126,7 @@ object Topic extends Controller {
     val in = Iteratee.foreach[String](println).map { _ =>
       consumer.commitOffsets()
       consumer.shutdown()
+      deleteZNode(zkClient, "/consumers/" + consumerGroup)
     }
 
     (in, out)

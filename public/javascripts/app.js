@@ -13,10 +13,10 @@ var app = angular.module('app', ['ngRoute', 'ui.bootstrap'])
                 controller: 'BrokersController',
                 templateUrl: '/brokers'
             })
-            .when('/topics/:name', {
+            .when('/topics/:name/:zookeeper', {
                 controller: 'TopicController',
                 templateUrl: function (params) {
-                    return '/topics/' + params.name
+                    return '/topics/' + params.name + '/' + params.zookeeper
                 }
             })
             .otherwise({

@@ -6,7 +6,6 @@ CREATE TABLE zookeepers (
   port INT,
   statusId LONG,
   groupId LONG,
-  consumer_group VARCHAR,
   PRIMARY KEY (name)
 );
 

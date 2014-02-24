@@ -14,7 +14,6 @@ object Zookeeper extends Controller {
     "name" -> Forms.text,
     "host" -> Forms.text,
     "port" -> Forms.number,
-    "consumer_group" -> Forms.text,
     "group" -> Forms.text
   )
 
@@ -39,10 +38,9 @@ object Zookeeper extends Controller {
         val name: String = formSuccess._1
         val host: String = formSuccess._2
         val port: Int = formSuccess._3
-        val consumerGroup: String = formSuccess._4
-        val group: String = formSuccess._5
+        val group: String = formSuccess._4
 
-        val zk = models.Zookeeper.insert(models.Zookeeper(name, host, port, models.Group.findByName(group.toUpperCase).get.id, models.Status.Disconnected.id, consumerGroup))
+        val zk = models.Zookeeper.insert(models.Zookeeper(name, host, port, models.Group.findByName(group.toUpperCase).get.id, models.Status.Disconnected.id))
 
         try {
           Registry.lookupObject(PropertyConstants.Router) match {

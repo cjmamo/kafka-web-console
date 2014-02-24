@@ -64,7 +64,7 @@ object Zookeeper {
   }
 }
 
-case class Zookeeper(@Column("name") id: String, host: String, port: Int, groupId: Long, statusId: Long, @Column("consumer_group") consumerGroup: String)
+case class Zookeeper(@Column("name") id: String, host: String, port: Int, groupId: Long, statusId: Long)
   extends KeyedEntity[String] {
 
   def name = id

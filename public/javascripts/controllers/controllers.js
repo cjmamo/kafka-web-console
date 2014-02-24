@@ -48,7 +48,7 @@ app.controller("ZookeepersController", function ($scope, $http, $location) {
     };
 
     $scope.createZookeeper = function (zookeeper) {
-        $http.post('/zookeepers.json', { name: zookeeper.name, host: zookeeper.host, port: zookeeper.port, consumer_group: zookeeper.consumerGroup, group: zookeeper.group.name}).success(function () {
+        $http.post('/zookeepers.json', { name: zookeeper.name, host: zookeeper.host, port: zookeeper.port, group: zookeeper.group.name}).success(function () {
             $location.path("/")
         });
     };
@@ -64,7 +64,7 @@ app.controller("TopicsController", function ($scope, $location, $http, topicServ
         $http.get('/topics.json/' + topic.name + '/' + topic.zookeeper).success(function (data, status, headers, config) {
             topicService.setTopic(data)
             topicService.setZookeeper(topic.zookeeper)
-            $location.path('/topics/' + topic.name);
+            $location.path('/topics/' + topic.name + '/' + topic.zookeeper);
         });
     };
 });

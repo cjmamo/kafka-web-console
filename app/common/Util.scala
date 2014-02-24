@@ -6,7 +6,7 @@ import com.twitter.zk.{ZNode, ZkClient}
 import common.Registry.PropertyConstants
 import models.Zookeeper
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import org.apache.zookeeper.KeeperException.NoNodeException
+import org.apache.zookeeper.KeeperException.{NotEmptyException, NodeExistsException, NoNodeException}
 
 object Util {
   def twitterToScalaFuture[A](twitterFuture: com.twitter.util.Future[A]): Future[A] = {
@@ -42,9 +42,7 @@ object Util {
         children <- twitterToScalaFuture(zNode.getChildren()).map(_.children).recover {
           case e: NoNodeException => Nil
         }
-        subtrees <- Future.sequence(children.map({
-          getZChildren(_, tail)
-        }))
+        subtrees <- Future.sequence(children.map(getZChildren(_, tail)))
 
       } yield subtrees
 
@@ -59,4 +57,24 @@ object Util {
     case Nil => Future(Seq(zNode))
   }
 
+  def deleteZNode(zkClient: ZkClient, path: String): Future[ZNode] = {
+    deleteZNode(zkClient(path))
+  }
+
+  def deleteZNode(zNode: ZNode): Future[ZNode] = {
+    val delNode = twitterToScalaFuture(zNode.getData()).flatMap { d =>
+      twitterToScalaFuture(zNode.delete(d.stat.getVersion)).recover {
+        case e: NotEmptyException => {
+          for {
+            children <- getZChildren(zNode, List("*"))
+            delChildren <- Future.sequence(children.map(n => deleteZNode(n)))
+          } yield deleteZNode(zNode)
+        }
+        case e: NoNodeException => Future(ZNode)
+      }
+    }
+
+    //TODO: investigate why actual type is Future[Object]
+    delNode.asInstanceOf[Future[ZNode]]
+  }
 }
