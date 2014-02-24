@@ -89,6 +89,7 @@ app.controller("TopicController", function ($scope, topicService, $location, $ro
         }
     });
 
+    console.log(maxPartitionCount)
     $scope.maxPartitionCount = new Array(maxPartitionCount)
 
     $scope.$on('$destroy', function () {
