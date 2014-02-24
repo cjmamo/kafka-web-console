@@ -6,6 +6,7 @@ CREATE TABLE zookeepers (
   port INT,
   statusId LONG,
   groupId LONG,
+  consumer_group VARCHAR,
   PRIMARY KEY (name)
 );
 
@@ -22,9 +23,14 @@ CREATE TABLE status (
 );
 
 INSERT INTO groups (id, name) VALUES (0, 'ALL');
+INSERT INTO groups (id, name) VALUES (1, 'DEVELOPMENT');
+INSERT INTO groups (id, name) VALUES (2, 'PRODUCTION');
+INSERT INTO groups (id, name) VALUES (3, 'STAGING');
+INSERT INTO groups (id, name) VALUES (4, 'TEST');
 
-INSERT INTO status (id, name) VALUES (0, 'DISCONNECTED');
+INSERT INTO status (id, name) VALUES (0, 'CONNECTING');
 INSERT INTO status (id, name) VALUES (1, 'CONNECTED');
+INSERT INTO status (id, name) VALUES (2, 'DISCONNECTED');
 
 # --- !Downs
 

@@ -6,14 +6,14 @@
 GET         /                                         controllers.Application.index()
 
 GET         /zookeepers                               controllers.Assets.at(path="/public", file="/html/partials/zookeeper/index.html")
-GET         /zookeepers.json                          controllers.Zookeeper.index(group ?= "ALL")
 GET         /zookeepers.json/feed                     controllers.Zookeeper.feed()
+GET         /zookeepers.json/:group                   controllers.Zookeeper.index(group)
 POST        /zookeepers.json                          controllers.Zookeeper.create()
 
 GET         /topics                                   controllers.Assets.at(path="/public", file="/html/partials/topic/index.html")
 GET         /topics.json                              controllers.Topic.index()
-POST        /topics.json/:name                        controllers.Topic.show(name)
-GET         /topics.json/:name/feed/:zookeeper        controllers.Topic.feed(name, zookeeper)
+GET         /topics.json/:name/:zookeeper             controllers.Topic.show(name, zookeeper)
+GET         /topics.json/:name/:zookeeper/feed        controllers.Topic.feed(name, zookeeper)
 GET         /topics/:name                             controllers.IgnoreParamAssets.at(path="/public", file="/html/partials/topic/show.html", name)
 
 GET         /groups                                   controllers.Group.index()

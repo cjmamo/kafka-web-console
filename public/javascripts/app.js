@@ -9,15 +9,6 @@ var app = angular.module('app', ['ngRoute', 'ui.bootstrap'])
                 controller: 'TopicsController',
                 templateUrl: '/topics'
             })
-//            .when('/topics/:name/:zookeeper', {
-//                controller: 'TopicsController'
-//                template: function($scope) {
-//                    alert($scope.zookeeper)
-//                    window.location.hash = '/topics/' + $scope.name
-//                    return "assdds"
-//                }
-//                templateUrl: '/topics'
-//            })
             .when('/brokers', {
                 controller: 'BrokersController',
                 templateUrl: '/brokers'
@@ -59,11 +50,6 @@ app.service('topicService', function () {
         return zookeeper_;
     };
 });
-
-//app.service('feedService', function ($location) {
-//    ws = new WebSocket('ws://' + $location.host() + ':' + $location.port() + '/feed');
-//    return ws
-//});
 
 app.filter('reverse', function () {
     return function (items) {

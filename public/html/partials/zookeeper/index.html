@@ -1,5 +1,5 @@
-<tabset ng-init="getZookeepers('ALL')">
-    <tab heading="All" data-ng-click="getZookeepers('ALL')">
+<tabset ng-init="getZookeepers('all')">
+    <tab data-ng-click="getZookeepers('all')" heading="All">
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
@@ -10,7 +10,7 @@
                 <th>Group</th>
                 </thead>
                 <tbody>
-                <tr data-ng-repeat="zookeeper in zookeepers">
+                <tr data-ng-repeat="zookeeper in allZookeepers">
                     <td>{{zookeeper.name}}</td>
                     <td>{{zookeeper.host}}</td>
                     <td>{{zookeeper.port}}</td>
@@ -21,10 +21,86 @@
             </table>
         </div>
     </tab>
-    <tab heading="Development"></tab>
-    <tab heading="Production"></tab>
-    <tab heading="Staging"></tab>
-    <tab heading="Test"></tab>
+    <tab data-ng-click="getZookeepers('development')" heading="Development">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                <th>Name</th>
+                <th>Host</th>
+                <th>Port</th>
+                <th>Status</th>
+                </thead>
+                <tbody>
+                <tr data-ng-repeat="zookeeper in developmentZookeepers">
+                    <td>{{zookeeper.name}}</td>
+                    <td>{{zookeeper.host}}</td>
+                    <td>{{zookeeper.port}}</td>
+                    <td>{{zookeeper.status}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </tab>
+    <tab data-ng-click="getZookeepers('production')" heading="Production">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                <th>Name</th>
+                <th>Host</th>
+                <th>Port</th>
+                <th>Status</th>
+                </thead>
+                <tbody>
+                <tr data-ng-repeat="zookeeper in productionZookeepers">
+                    <td>{{zookeeper.name}}</td>
+                    <td>{{zookeeper.host}}</td>
+                    <td>{{zookeeper.port}}</td>
+                    <td>{{zookeeper.status}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </tab>
+    <tab data-ng-click="getZookeepers('staging')" heading="Staging">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                <th>Name</th>
+                <th>Host</th>
+                <th>Port</th>
+                <th>Status</th>
+                </thead>
+                <tbody>
+                <tr data-ng-repeat="zookeeper in stagingZookeepers">
+                    <td>{{zookeeper.name}}</td>
+                    <td>{{zookeeper.host}}</td>
+                    <td>{{zookeeper.port}}</td>
+                    <td>{{zookeeper.status}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </tab>
+    <tab data-ng-click="getZookeepers('test')" heading="Test">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                <th>Name</th>
+                <th>Host</th>
+                <th>Port</th>
+                <th>Status</th>
+                </thead>
+                <tbody>
+                <tr data-ng-repeat="zookeeper in testZookeepers">
+                    <td>{{zookeeper.name}}</td>
+                    <td>{{zookeeper.host}}</td>
+                    <td>{{zookeeper.port}}</td>
+                    <td>{{zookeeper.status}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </tab>
     <tab heading="Register Zookeeper">
         <form role="form" data-ng-submit="createZookeeper(zookeeper)">
             <div class="form-group">
@@ -44,6 +120,20 @@
                     <dt><label for="port">Port</label></dt>
                     <dd>
                         <input type="number" id="port" name="port" data-ng-model="zookeeper.port" required="true">
+                    </dd>
+                </dl>
+                <dl id="consumer_group_field">
+                    <dt><label for="consumer_group">Consumer Group</label></dt>
+                    <dd>
+                        <input type="text" id="consumer_group" name="consumer_group" required="true"
+                               data-ng-model="zookeeper.consumerGroup">
+                    </dd>
+                </dl>
+                <dl id="group_field">
+                    <dt><label for="group">Group</label></dt>
+                    <dd>
+                        <select data-ng-model="zookeeper.group" data-ng-required="true" data-ng-options="g.name for g in groups" id="group">
+                        </select>
                     </dd>
                 </dl>
             </div>

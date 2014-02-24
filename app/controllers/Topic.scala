@@ -69,14 +69,36 @@ object Topic extends Controller {
     Future.sequence(topicsZks).map(l => Ok(Json.toJson(l.flatten)(TopicsWrites)))
   }
 
-  def show(name: String) = Action.async { request =>
-    request.body.asJson match {
-      case Some(s) => getTopic(name, s)
-      case _ => Future(BadRequest(""))
+  def show(name: String, zookeeper: String) = Action.async {
+    val connectedZks = connectedZookeepers((z, c) => (z, c)).filter(_._1.name == zookeeper)
+
+    if (connectedZks.size > 0) {
+      val (_, zkClient) = connectedZks.head
+      val partitionsOffsetsAndConsumersFuture = for {
+      // it's possible that a offset dir hasn't been created yet for some consumers
+        ownedTopicNodes <- getZChildren(zkClient, "/consumers/*/owners/" + name)
+
+        allConsumers = ownedTopicNodes.map(n => n.path.split("/").filter(_ != "")(1))
+        offsetsPartitionsNodes <- getZChildren(zkClient, "/consumers/*/offsets/" + name + "/*")
+        consumersAndPartitionsAndOffsets <- Future.sequence(offsetsPartitionsNodes.map(p => twitterToScalaFuture(p.getData().map(d => (p.path.split("/")(2), p.name, new String(d.bytes))))))
+        partitionsOffsetsAndConsumers = consumersAndPartitionsAndOffsets.groupBy(_._1).map { s =>
+          Map("consumerGroup" -> s._1, "offsets" -> s._2.map { t =>
+            Map("partition" -> t._2, "offset" -> t._3)
+          })
+        }.toList
+        diff = allConsumers.filterNot { ac =>
+          partitionsOffsetsAndConsumers.map(c => ac == c("consumerGroup")).contains(true)
+        }
+
+      } yield diff.map(cg => Map("consumerGroup" -> cg, "offsets" -> Nil)).toList ++ partitionsOffsetsAndConsumers
+      partitionsOffsetsAndConsumersFuture.map(poc => Ok(Json.toJson(poc)(TopicWrites)))
+    }
+    else {
+      Future(Ok(Json.toJson(List[String]())))
     }
   }
 
-  def feed(name: String, zookeeper: String) = WebSocket.using[String] { request =>
+  def feed(name: String, zookeeper: String) = WebSocket.using[String] { implicit request =>
 
     val topicCountMap = new util.HashMap[EventHandler[String, String], Integer]()
     val consumer = Consumer.create(createConsumerConfig(models.Zookeeper.findById(zookeeper).get.toString, "1234"))
@@ -105,36 +127,6 @@ object Topic extends Controller {
     }
 
     (in, out)
-  }
-
-
-  private def getTopic(name: String, zookeeper: JsValue) = {
-    val connectedZks = connectedZookeepers((z, c) => (z, c)).filter(_._1.name == (zookeeper \ "zookeeper").as[String])
-
-    if (connectedZks.size > 0) {
-      val (_, zkClient) = connectedZks.head
-      val partitionsOffsetsAndConsumersFuture = for {
-      // it's possible that a offset dir hasn't been created yet for some consumers
-        ownedTopicNodes <- getZChildren(zkClient, "/consumers/*/owners/" + name)
-
-        allConsumers = ownedTopicNodes.map(n => n.path.split("/").filter(_ != "")(1))
-        offsetsPartitionsNodes <- getZChildren(zkClient, "/consumers/*/offsets/" + name + "/*")
-        consumersAndPartitionsAndOffsets <- Future.sequence(offsetsPartitionsNodes.map(p => twitterToScalaFuture(p.getData().map(d => (p.path.split("/")(2), p.name, new String(d.bytes))))))
-        partitionsOffsetsAndConsumers = consumersAndPartitionsAndOffsets.groupBy(_._1).map { s =>
-          Map("consumerGroup" -> s._1, "offsets" -> s._2.map { t =>
-            Map("partition" -> t._2, "offset" -> t._3)
-          })
-        }.toList
-        diff = allConsumers.filterNot { ac =>
-          partitionsOffsetsAndConsumers.map(c => ac == c("consumerGroup")).contains(true)
-        }
-
-      } yield diff.map(cg => Map("consumerGroup" -> cg, "offsets" -> Nil)).toList ++ partitionsOffsetsAndConsumers
-      partitionsOffsetsAndConsumersFuture.map(poc => Ok(Json.toJson(poc)(TopicWrites)))
-    }
-    else {
-      Future(Ok(Json.toJson(List[String]())))
-    }
   }
 
   private def createConsumerConfig(a_zookeeper: String, a_groupId: String): ConsumerConfig = {

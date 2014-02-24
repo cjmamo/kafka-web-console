@@ -5,13 +5,13 @@ import collection.Iterable
 import org.squeryl.{Query, KeyedEntity}
 import org.squeryl.dsl.OneToMany
 
-object Group extends Enumeration  {
+object Group extends Enumeration {
 
-//  object Group extends Enumeration  {
-//    type Group = Value
-
-    val All = Value("ALL")
-//  }
+  val All = Value("ALL")
+  val Development = Value("DEVELOPMENT")
+  val Production = Value("PRODUCTION")
+  val Staging = Value("STAGING")
+  val Test = Value("TEST")
 
   import Database.groupsTable
 

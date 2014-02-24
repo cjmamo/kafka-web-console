@@ -50,13 +50,13 @@ class ConnectionManager() extends Actor {
 
       val onSessionEvent: PartialFunction[StateEvent, Unit] = {
         case s: StateEvent if s.state == KeeperState.SyncConnected => {
-          router ! ConnectNotification(Zookeeper(zk.name, zk.host, zk.port, zk.groupId, Status.Connected.id))
+          router ! ConnectNotification(Zookeeper(zk.name, zk.host, zk.port, zk.groupId, Status.Connected.id, zk.consumerGroup))
         }
         case s: StateEvent if s.state == KeeperState.Disconnected => {
-          router ! ConnectNotification(Zookeeper(zk.name, zk.host, zk.port, zk.groupId, Status.Disconnected.id))
+          router ! ConnectNotification(Zookeeper(zk.name, zk.host, zk.port, zk.groupId, Status.Connecting.id, zk.consumerGroup))
         }
         case s: StateEvent if s.state == KeeperState.Expired => {
-          router ! ConnectNotification(Zookeeper(zk.name, zk.host, zk.port, zk.groupId, Status.Disconnected.id))
+          router ! ConnectNotification(Zookeeper(zk.name, zk.host, zk.port, zk.groupId, Status.Connecting.id, zk.consumerGroup))
         }
       }
 
@@ -64,7 +64,7 @@ class ConnectionManager() extends Actor {
       val zookeeperFuture = zkClient()
 
       zookeeperFuture.onFailure(_ => {
-        router ! ConnectNotification(Zookeeper(zk.name, zk.host, zk.port, zk.groupId, Status.Disconnected.id))
+        router ! ConnectNotification(Zookeeper(zk.name, zk.host, zk.port, zk.groupId, Status.Connecting.id, zk.consumerGroup))
         Akka.system.scheduler.scheduleOnce(
           Duration.create(5, TimeUnit.SECONDS), self, Message.Connect(zk)
         )
