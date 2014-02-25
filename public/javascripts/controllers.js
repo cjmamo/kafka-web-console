@@ -54,42 +54,40 @@ app.controller("ZookeepersController", function ($scope, $http, $location) {
     };
 });
 
-app.controller("TopicsController", function ($scope, $location, $http, topicService) {
+app.controller("TopicsController", function ($scope, $location, $http, $routeParams) {
     $http.get('/topics.json').
         success(function (data, status, headers, config) {
             $scope.topics = data;
         });
 
     $scope.getTopic = function (topic) {
-        $http.get('/topics.json/' + topic.name + '/' + topic.zookeeper).success(function (data, status, headers, config) {
-            topicService.setTopic(data);
-            topicService.setZookeeper(topic.zookeeper);
-            $location.path('/topics/' + topic.name + '/' + topic.zookeeper);
-        });
+        $location.path('/topics/' + topic.name + '/' + topic.zookeeper);
     };
 });
 
-app.controller("TopicController", function ($scope, topicService, $location, $routeParams) {
-    var ws = new WebSocket('ws://' + $location.host() + ':' + $location.port() + '/topics.json/' + $routeParams.name + '/' + topicService.getZookeeper() + '/feed');
+app.controller("TopicController", function ($http, $scope, $location, $routeParams) {
+    $http.get('/topics.json/' + $routeParams.name + '/' + $routeParams.zookeeper).success(function (data) {
+        var maxPartitionCount = 0;
+        $scope.topic = data;
+        angular.forEach($scope.topic, function (consumer) {
+            maxPartitionCount = consumer.offsets.length;
+
+            if (maxPartitionCount < consumer.offsets.length) {
+                maxPartitionCount = consumer.offsets.length;
+            }
+        });
+
+        $scope.maxPartitionCount = new Array(maxPartitionCount);
+
+    });
+
+    var ws = new WebSocket('ws://' + $location.host() + ':' + $location.port() + '/topics.json/' + $routeParams.name + '/' + $routeParams.zookeeper + '/feed');
     ws.onmessage = function (message) {
         var p = angular.element("<p />");
         p.text(message.data);
         $("#topic-feed").append(p);
         $scope.$apply();
     }
-
-
-    var maxPartitionCount = 0;
-    $scope.topic = topicService.getTopic();
-    angular.forEach($scope.topic, function (consumer) {
-        maxPartitionCount = consumer.offsets.length;
-
-        if (maxPartitionCount < consumer.offsets.length) {
-            maxPartitionCount = consumer.offsets.length;
-        }
-    });
-
-    $scope.maxPartitionCount = new Array(maxPartitionCount);
 
     $scope.$on('$destroy', function () {
         ws.close();
