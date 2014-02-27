@@ -75,7 +75,7 @@ body {
     margin-top: 0;
 }
 
-.zookeeper-form, #topic-feed {
+.zookeeper-form, #messages {
     margin: 20px;
 }
 
@@ -83,20 +83,34 @@ body {
     cursor: pointer;
 }
 
-/*
- * Placeholder dashboard ideas
- */
+.hiddenRow {
+    padding: 0 !important;
+}
 
-/*.placeholders {*/
-/*margin-bottom: 30px;*/
-/*text-align: center;*/
-/*}*/
-/*.placeholders h4 {*/
-/*margin-bottom: 0;*/
-/*}*/
-/*.placeholder {*/
-/*margin-bottom: 20px;*/
-/*}*/
-/*.placeholder img {*/
-/*border-radius: 50%;*/
-/*}*/
+.panel-default > .panel-heading {
+    background: none;
+}
+
+.panel-default {
+    border: none;
+}
+
+.panel-title {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    font-weight: normal;
+    color: #333;
+}
+
+.panel {
+    box-shadow: none;
+    background: none;
+}
+
+#consumer-groups a {
+    cursor: pointer;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    font-weight: normal;
+    color: #333;
+}

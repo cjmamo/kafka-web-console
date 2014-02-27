@@ -1,4 +1,4 @@
-var app = angular.module('app', ['ngRoute', 'ui.bootstrap'])
+var app = angular.module('app', ['ngRoute'])
     .config(function ($routeProvider) {
         $routeProvider
             .when('/zookeepers', {
@@ -27,5 +27,32 @@ var app = angular.module('app', ['ngRoute', 'ui.bootstrap'])
 app.run(function ($rootScope, $location) {
     $rootScope.isActive = function (route) {
         return route === $location.path();
+    };
+});
+
+app.service('topicService', function () {
+    var topic_ = "";
+    var zookeeper_ = "";
+
+    this.setTopic = function (topic) {
+        topic_ = topic;
+    };
+
+    this.getTopic = function () {
+        return topic_;
+    };
+
+    this.setZookeeper = function (zookeeper) {
+        zookeeper_ = zookeeper;
+    };
+
+    this.getZookeeper = function () {
+        return zookeeper_;
+    };
+});
+
+app.filter('reverse', function () {
+    return function (items) {
+        return items.slice().reverse();
     };
 });

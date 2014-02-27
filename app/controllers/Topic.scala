@@ -17,12 +17,12 @@
 package controllers
 
 import play.api.mvc.{WebSocket, Action, Controller}
-import scala.concurrent.{Channel, Future}
+import scala.concurrent.Future
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import common.Util._
 import play.api.libs.json._
 import play.api.libs.json.JsObject
-import play.api.libs.iteratee.{Concurrent, Enumerator, Iteratee}
+import play.api.libs.iteratee.{Concurrent, Iteratee}
 import common.Registry
 import common.Registry.PropertyConstants
 import java.util
@@ -78,9 +78,12 @@ object Topic extends Controller {
   def index = Action.async {
     val topicsZks = connectedZookeepers { (zk, zkClient) =>
       for {
+      // possible for topics without partitions in Zookeeper
+        allTopicNodes <- getZChildren(zkClient, "/brokers/topics/*")
+        allTopics = allTopicNodes.map(p => (p.path.split("/").filter(_ != "")(2), Seq[String]())).toMap
         partitions <- getZChildren(zkClient, "/brokers/topics/*/partitions/*")
         topics = partitions.map(p => (p.path.split("/").filter(_ != "")(2), p.name)).groupBy(_._1).map(e => e._1 -> e._2.map(_._2))
-      } yield topics.map(e => Map("name" -> e._1, "partitions" -> e._2, "zookeeper" -> zk.name)).toList
+      } yield (allTopics ++ topics).map(e => Map("name" -> e._1, "partitions" -> e._2, "zookeeper" -> zk.name)).toList
     }
 
     Future.sequence(topicsZks).map(l => Ok(Json.toJson(l.flatten)(TopicsWrites)))
@@ -145,10 +148,10 @@ object Topic extends Controller {
     (in, out)
   }
 
-  private def createConsumerConfig(a_zookeeper: String, a_groupId: String): ConsumerConfig = {
+  private def createConsumerConfig(zookeeperAddress: String, gid: String): ConsumerConfig = {
     val props = new Properties();
-    props.put("zookeeper.connect", a_zookeeper);
-    props.put("group.id", a_groupId);
+    props.put("zookeeper.connect", zookeeperAddress);
+    props.put("group.id", gid);
     props.put("zookeeper.session.timeout.ms", "400");
     props.put("zookeeper.sync.time.ms", "200");
     props.put("auto.commit.interval.ms", "1000");

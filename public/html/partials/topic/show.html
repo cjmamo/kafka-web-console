@@ -1,10 +1,15 @@
-<tabset>
-    <tab heading="Consumer Groups">
+<ul class="nav nav-tabs">
+    <li class="active"><a data-target="#consumer-groups" data-toggle="tab">Consumer Groups</a></li>
+    <li><a data-target="#topic-feed" data-toggle="tab">Topic Feed</a></li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane active" id="consumer-groups">
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
 
-                <th>Consumer</th>
+                <th>Consumer Group</th>
                 <th colspan="3">Partition Offsets</th>
                 <tr>
                     <th colspan="1" ng-hide="maxPartitionCount.length < 1"></th>
@@ -12,15 +17,30 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr data-ng-repeat="consumer in topic">
-                    <td>{{consumer.consumerGroup}}</td>
-                    <td data-ng-repeat="offset in consumer.offsets | reverse">{{offset.offset}}</td>
+                <tr data-ng-repeat="consumerGroup in topic">
+                    <td>
+                        <div class="panel-group" id="accordion">
+                            <div class="panel panel-default">
+                                <!--<div class="panel-heading">-->
+                                <a data-toggle="collapse" data-target="#collapse{{consumerGroup.consumerGroup}}"
+                                   data-ng-click="getConsumerGroup(consumerGroup.consumerGroup)"
+                                   data-parent="#accordion">{{consumerGroup.consumerGroup}}</a>
+                                <!--</div>-->
+                            </div>
+                        </div>
+                        <div id="collapse{{consumerGroup.consumerGroup}}" class="panel-collapse collapse">
+                            <div class="panel-body">
+                                <p data-ng-repeat="consumer in consumerGroup.consumers">{{consumer}}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td data-ng-repeat="offset in consumerGroup.offsets | orderObjectBy:'partition'">{{offset.offset}}</td>
                 </tr>
                 </tbody>
             </table>
         </div>
-    </tab>
-    <tab heading="Topic Feed">
-        <div class="text-center" id="topic-feed"></div>
-    </tab>
-</tabset>
+    </div>
+    <div class="tab-pane active" id="topic-feed">
+        <div class="text-center" id="messages"></div>
+    </div>
+</div>

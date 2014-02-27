@@ -1,5 +1,26 @@
-<tabset ng-init="getZookeepers('all')">
-    <tab data-ng-click="getZookeepers('all')" heading="All">
+<ul class="nav nav-tabs" ng-init="getZookeepers('all')">
+    <li class="active" data-ng-click="getZookeepers('all')">
+        <a data-toggle="tab" data-target="#all-zookeepers">All</a>
+    </li>
+    <li data-ng-click="getZookeepers('development')">
+        <a data-toggle="tab" data-target="#development-zookeepers">Development</a>
+    </li>
+    <li data-ng-click="getZookeepers('production')">
+        <a data-toggle="tab" data-target="#production-zookeepers">Production</a>
+    </li>
+    <li data-ng-click="getZookeepers('staging')">
+        <a data-toggle="tab" data-target="#staging-zookeepers">Staging</a>
+    </li>
+    <li data-ng-click="getZookeepers('test')">
+        <a data-toggle="tab" data-target="#test-zookeepers">Test</a>
+    </li>
+    <li>
+        <a data-toggle="tab" data-target="#register-zookeeper">Register Zookeeper</a>
+    </li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane active" id="all-zookeepers">
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
@@ -20,8 +41,8 @@
                 </tbody>
             </table>
         </div>
-    </tab>
-    <tab data-ng-click="getZookeepers('development')" heading="Development">
+    </div>
+    <div class="tab-pane" id="development-zookeepers">
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
@@ -40,8 +61,8 @@
                 </tbody>
             </table>
         </div>
-    </tab>
-    <tab data-ng-click="getZookeepers('production')" heading="Production">
+    </div>
+    <div class="tab-pane" id="production-zookeepers">
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
@@ -60,8 +81,8 @@
                 </tbody>
             </table>
         </div>
-    </tab>
-    <tab data-ng-click="getZookeepers('staging')" heading="Staging">
+    </div>
+    <div class="tab-pane" id="staging-zookeepers">
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
@@ -80,8 +101,8 @@
                 </tbody>
             </table>
         </div>
-    </tab>
-    <tab data-ng-click="getZookeepers('test')" heading="Test">
+    </div>
+    <div class="tab-pane" id="test-zookeepers">
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
@@ -100,10 +121,10 @@
                 </tbody>
             </table>
         </div>
-    </tab>
-    <tab heading="Register Zookeeper">
-
-        <form role="form" class="zookeeper-form" name="zookeeperForm" data-ng-submit="createZookeeper(zookeeper)" novalidate>
+    </div>
+    <div class="tab-pane" id="register-zookeeper">
+        <form role="form" class="zookeeper-form" name="zookeeperForm" data-ng-submit="createZookeeper(zookeeper)"
+              novalidate>
             <div class="form-group"
                  data-ng-class="{ 'has-error' : zookeeperForm.name.$invalid && !zookeeperForm.name.$pristine }">
                 <label for="name">Name</label>
@@ -145,8 +166,7 @@
                 <button class="btn btn-large btn-primary" data-ng-disabled="zookeeperForm.$invalid">Connect</button>
             </p>
         </form>
-        </div>
-    </tab>
-</tabset>
+    </div>
+</div>
 
 

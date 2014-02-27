@@ -42,8 +42,8 @@ app.controller("ZookeepersController", function ($scope, $http, $location) {
 
     $scope.getZookeepers = function (group) {
         $http.get('/zookeepers.json/' + group).
-            success(function (data, status, headers, config) {
-                $scope[group + 'Zookeepers'] = angular.fromJson(data);
+            success(function (data) {
+                $scope[group + 'Zookeepers'] = data;
             });
     };
 
@@ -54,9 +54,9 @@ app.controller("ZookeepersController", function ($scope, $http, $location) {
     };
 });
 
-app.controller("TopicsController", function ($scope, $location, $http, $routeParams) {
+app.controller("TopicsController", function ($scope, $location, $http) {
     $http.get('/topics.json').
-        success(function (data, status, headers, config) {
+        success(function (data) {
             $scope.topics = data;
         });
 
@@ -69,11 +69,17 @@ app.controller("TopicController", function ($http, $scope, $location, $routePara
     $http.get('/topics.json/' + $routeParams.name + '/' + $routeParams.zookeeper).success(function (data) {
         var maxPartitionCount = 0;
         $scope.topic = data;
-        angular.forEach($scope.topic, function (consumer) {
-            maxPartitionCount = consumer.offsets.length;
+        angular.forEach($scope.topic, function (consumerGroup) {
+            consumerGroup['consumers'] = [];
 
-            if (maxPartitionCount < consumer.offsets.length) {
-                maxPartitionCount = consumer.offsets.length;
+            angular.forEach(consumerGroup.offsets, function (offset) {
+                offset.partition = parseInt(offset.partition)
+            })
+
+            maxPartitionCount = consumerGroup.offsets.length;
+
+            if (maxPartitionCount < consumerGroup.offsets.length) {
+                maxPartitionCount = consumerGroup.offsets.length;
             }
         });
 
@@ -85,18 +91,28 @@ app.controller("TopicController", function ($http, $scope, $location, $routePara
     ws.onmessage = function (message) {
         var p = angular.element("<p />");
         p.text(message.data);
-        $("#topic-feed").append(p);
+        $("#messages").append(p);
         $scope.$apply();
-    }
+    };
 
     $scope.$on('$destroy', function () {
         ws.close();
     });
+
+    $scope.getConsumerGroup = function (consumerGroup) {
+        $http.get('/consumergroups.json/' + consumerGroup + '/' + $routeParams.name + '/' + $routeParams.zookeeper).success(function (data) {
+            angular.forEach($scope.topic, function (consumerGroup_) {
+                if (consumerGroup === consumerGroup_.consumerGroup) {
+                    consumerGroup_.consumers = data;
+                }
+            });
+        });
+    };
+
 });
 
 app.controller("BrokersController", function ($scope, $http) {
-    $http.get('/brokers.json').
-        success(function (data, status, headers, config) {
-            $scope.brokers = data;
-        });
+    $http.get('/brokers.json').success(function (data) {
+        $scope.brokers = data;
+    });
 });
