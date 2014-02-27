@@ -156,7 +156,7 @@
                  data-ng-class="{ 'has-error' : zookeeperForm.port.$invalid && !zookeeperForm.port.$pristine }">
                 <label for="port">Port</label>
                 <input type="number" id="port" name="port" data-ng-model="zookeeper.port"
-                       data-ng-required="true" class="form-control">
+                       data-ng-required="true" class="form-control" min="0" max="65535">
 
                 <p data-ng-show="zookeeperForm.port.$invalid && !zookeeperForm.port.$pristine" class="help-block">Port
                     number is invalid.</p>
