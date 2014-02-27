@@ -6,7 +6,7 @@
 <div class="tab-content">
     <div class="tab-pane active" id="consumer-groups">
         <div class="table-responsive">
-            <table class="table table-hover">
+            <table class="table">
                 <thead>
 
                 <th>Consumer Group</th>
@@ -21,20 +21,23 @@
                     <td>
                         <div class="panel-group" id="accordion">
                             <div class="panel panel-default">
-                                <!--<div class="panel-heading">-->
                                 <a data-toggle="collapse" data-target="#collapse{{consumerGroup.consumerGroup}}"
                                    data-ng-click="getConsumerGroup(consumerGroup.consumerGroup)"
-                                   data-parent="#accordion">{{consumerGroup.consumerGroup}}</a>
-                                <!--</div>-->
+                                   data-parent="#accordion">{{consumerGroup.consumerGroup}}   <i class="fa fa-caret-down"></i></a>
                             </div>
                         </div>
                         <div id="collapse{{consumerGroup.consumerGroup}}" class="panel-collapse collapse">
                             <div class="panel-body">
-                                <p data-ng-repeat="consumer in consumerGroup.consumers">{{consumer}}</p>
+                                <ul class="list-group">
+                                    <li data-ng-repeat="consumer in consumerGroup.consumers" class="list-group-item">
+                                        {{consumer}}
+                                    </li>
+                                </ul>
                             </div>
                         </div>
                     </td>
-                    <td data-ng-repeat="offset in consumerGroup.offsets | orderObjectBy:'partition'">{{offset.offset}}</td>
+                    <td data-ng-repeat="offset in consumerGroup.offsets | orderObjectBy:'partition'">{{offset.offset}}
+                    </td>
                 </tr>
                 </tbody>
             </table>

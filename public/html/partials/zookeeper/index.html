@@ -22,7 +22,7 @@
 <div class="tab-content">
     <div class="tab-pane active" id="all-zookeepers">
         <div class="table-responsive">
-            <table class="table table-hover">
+            <table class="table">
                 <thead>
                 <th>Name</th>
                 <th>Host</th>
@@ -31,7 +31,8 @@
                 <th>Group</th>
                 </thead>
                 <tbody>
-                <tr data-ng-repeat="zookeeper in allZookeepers">
+                <tr data-ng-class="{success: zookeeper.status == 'CONNECTED', active: zookeeper.status == 'CONNECTING', danger: zookeeper.status == 'DISCONNECTED'}"
+                    data-ng-repeat="zookeeper in allZookeepers">
                     <td>{{zookeeper.name}}</td>
                     <td>{{zookeeper.host}}</td>
                     <td>{{zookeeper.port}}</td>
@@ -44,7 +45,7 @@
     </div>
     <div class="tab-pane" id="development-zookeepers">
         <div class="table-responsive">
-            <table class="table table-hover">
+            <table class="table">
                 <thead>
                 <th>Name</th>
                 <th>Host</th>
@@ -52,7 +53,8 @@
                 <th>Status</th>
                 </thead>
                 <tbody>
-                <tr data-ng-repeat="zookeeper in developmentZookeepers">
+                <tr data-ng-class="{success: zookeeper.status == 'CONNECTED', active: zookeeper.status == 'CONNECTING', danger: zookeeper.status == 'DISCONNECTED'}"
+                    data-ng-repeat="zookeeper in developmentZookeepers">
                     <td>{{zookeeper.name}}</td>
                     <td>{{zookeeper.host}}</td>
                     <td>{{zookeeper.port}}</td>
@@ -64,7 +66,7 @@
     </div>
     <div class="tab-pane" id="production-zookeepers">
         <div class="table-responsive">
-            <table class="table table-hover">
+            <table class="table">
                 <thead>
                 <th>Name</th>
                 <th>Host</th>
@@ -72,7 +74,8 @@
                 <th>Status</th>
                 </thead>
                 <tbody>
-                <tr data-ng-repeat="zookeeper in productionZookeepers">
+                <tr data-ng-class="{success: zookeeper.status == 'CONNECTED', active: zookeeper.status == 'CONNECTING', danger: zookeeper.status == 'DISCONNECTED'}"
+                    data-ng-repeat="zookeeper in productionZookeepers">
                     <td>{{zookeeper.name}}</td>
                     <td>{{zookeeper.host}}</td>
                     <td>{{zookeeper.port}}</td>
@@ -84,7 +87,7 @@
     </div>
     <div class="tab-pane" id="staging-zookeepers">
         <div class="table-responsive">
-            <table class="table table-hover">
+            <table class="table">
                 <thead>
                 <th>Name</th>
                 <th>Host</th>
@@ -92,7 +95,8 @@
                 <th>Status</th>
                 </thead>
                 <tbody>
-                <tr data-ng-repeat="zookeeper in stagingZookeepers">
+                <tr data-ng-class="{success: zookeeper.status == 'CONNECTED', active: zookeeper.status == 'CONNECTING', danger: zookeeper.status == 'DISCONNECTED'}"
+                    data-ng-repeat="zookeeper in stagingZookeepers">
                     <td>{{zookeeper.name}}</td>
                     <td>{{zookeeper.host}}</td>
                     <td>{{zookeeper.port}}</td>
@@ -104,7 +108,7 @@
     </div>
     <div class="tab-pane" id="test-zookeepers">
         <div class="table-responsive">
-            <table class="table table-hover">
+            <table class="table">
                 <thead>
                 <th>Name</th>
                 <th>Host</th>
@@ -112,7 +116,8 @@
                 <th>Status</th>
                 </thead>
                 <tbody>
-                <tr data-ng-repeat="zookeeper in testZookeepers">
+                <tr data-ng-class="{success: zookeeper.status == 'CONNECTED', active: zookeeper.status == 'CONNECTING', danger: zookeeper.status == 'DISCONNECTED'}"
+                    data-ng-repeat="zookeeper in testZookeepers">
                     <td>{{zookeeper.name}}</td>
                     <td>{{zookeeper.host}}</td>
                     <td>{{zookeeper.port}}</td>
