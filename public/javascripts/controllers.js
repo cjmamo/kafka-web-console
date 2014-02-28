@@ -97,9 +97,9 @@ app.controller("TopicController", function ($http, $scope, $location, $routePara
 
     var ws = new WebSocket('ws://' + $location.host() + ':' + $location.port() + '/topics.json/' + $routeParams.name + '/' + $routeParams.zookeeper + '/feed');
     ws.onmessage = function (message) {
-        var p = angular.element("<p />");
-        p.text(message.data);
-        $("#messages").append(p);
+        var well = angular.element('<div class="well well-sm"/>');
+        well.text(message.data);
+        $("#messages").append(well);
         $scope.$apply();
     };
 
