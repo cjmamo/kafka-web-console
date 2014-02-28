@@ -39,6 +39,6 @@ Filling in the form and clicking on *Connect* will register the Zookeeper. Once 
 ![zookeepers](/img/zookeepers.png)
 
 
-Support 
--------
+Support
+---
 Please [report](http://github.com/claudemamo/kafka-web-console/issues) bugs or desired features.
