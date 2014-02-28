@@ -1,5 +1,7 @@
 app.controller("ZookeepersController", function ($scope, $http, $location) {
 
+    $('input').tooltip()
+
     $scope.groups = [
         {name: 'All'},
         {name: 'Development'},

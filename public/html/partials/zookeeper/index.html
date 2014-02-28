@@ -38,7 +38,10 @@
                     <td>{{zookeeper.port}}</td>
                     <td>{{zookeeper.status}}<p class="dots" data-ng-show="zookeeper.status == 'CONNECTING'">...</p></td>
                     <td>{{zookeeper.group}}</td>
-                    <td><button type="button" class="btn btn-danger btn-xs" data-ng-click="removeZookeeper(zookeeper)"><i style="vertical-align: middle;" class="fa fa-times-circle-o fa-lg"></i></button></td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-xs" data-ng-click="removeZookeeper(zookeeper)">
+                            <i style="vertical-align: middle;" class="fa fa-times-circle-o fa-lg"></i></button>
+                    </td>
                 </tr>
                 </tbody>
             </table>
@@ -60,7 +63,10 @@
                     <td>{{zookeeper.host}}</td>
                     <td>{{zookeeper.port}}</td>
                     <td>{{zookeeper.status}}<p class="dots" data-ng-show="zookeeper.status == 'CONNECTING'">...</p></td>
-                    <td><button type="button" class="btn btn-danger btn-sm" data-ng-click="removeZookeeper(zookeeper)"><i class="fa fa-times-circle-o fa-lg"></i></button></td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm" data-ng-click="removeZookeeper(zookeeper)">
+                            <i class="fa fa-times-circle-o fa-lg"></i></button>
+                    </td>
                 </tr>
                 </tbody>
             </table>
@@ -82,7 +88,10 @@
                     <td>{{zookeeper.host}}</td>
                     <td>{{zookeeper.port}}</td>
                     <td>{{zookeeper.status}}<p class="dots" data-ng-show="zookeeper.status == 'CONNECTING'">...</p></td>
-                    <td><button type="button" class="btn btn-danger btn-sm" data-ng-click="removeZookeeper(zookeeper)"><i class="fa fa-times-circle-o fa-lg"></i></button></td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm" data-ng-click="removeZookeeper(zookeeper)">
+                            <i class="fa fa-times-circle-o fa-lg"></i></button>
+                    </td>
                 </tr>
                 </tbody>
             </table>
@@ -104,7 +113,10 @@
                     <td>{{zookeeper.host}}</td>
                     <td>{{zookeeper.port}}</td>
                     <td>{{zookeeper.status}}<p class="dots" data-ng-show="zookeeper.status == 'CONNECTING'">...</p></td>
-                    <td><button type="button" class="btn btn-danger btn-sm" data-ng-click="removeZookeeper(zookeeper)"><i class="fa fa-times-circle-o fa-lg"></i></button></td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm" data-ng-click="removeZookeeper(zookeeper)">
+                            <i class="fa fa-times-circle-o fa-lg"></i></button>
+                    </td>
                 </tr>
                 </tbody>
             </table>
@@ -126,7 +138,10 @@
                     <td>{{zookeeper.host}}</td>
                     <td>{{zookeeper.port}}</td>
                     <td>{{zookeeper.status}}<p class="dots" data-ng-show="zookeeper.status == 'CONNECTING'">...</p></td>
-                    <td><button type="button" class="btn btn-danger btn-sm" data-ng-click="removeZookeeper(zookeeper)"><i class="fa fa-times-circle-o fa-lg"></i></button></td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-sm" data-ng-click="removeZookeeper(zookeeper)">
+                            <i class="fa fa-times-circle-o fa-lg"></i></button>
+                    </td>
                 </tr>
                 </tbody>
             </table>
@@ -139,7 +154,8 @@
                  data-ng-class="{ 'has-error' : zookeeperForm.name.$invalid && !zookeeperForm.name.$pristine }">
                 <label for="name">Name</label>
                 <input data-ng-required="true" type="text" id="name" name="name" data-ng-model="zookeeper.name"
-                       class="form-control">
+                       class="form-control" data-placement="bottom" title="Unique name to identify registered Zookeeper"
+                       data-toggle="tooltip">
 
                 <p data-ng-show="zookeeperForm.name.$invalid && !zookeeperForm.name.$pristine" class="help-block">A name
                     for Zookeeper is required.</p>
