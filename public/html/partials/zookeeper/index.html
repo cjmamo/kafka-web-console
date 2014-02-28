@@ -31,7 +31,7 @@
                 <th>Group</th>
                 </thead>
                 <tbody>
-                <tr data-ng-class="{success: zookeeper.status == 'CONNECTED', active: zookeeper.status == 'CONNECTING', danger: zookeeper.status == 'DISCONNECTED'}"
+                <tr data-ng-class="{success: zookeeper.status == 'CONNECTED', warning: zookeeper.status == 'CONNECTING', danger: zookeeper.status == 'DISCONNECTED'}"
                     data-ng-repeat="zookeeper in allZookeepers">
                     <td>{{zookeeper.name}}</td>
                     <td>{{zookeeper.host}}</td>
@@ -53,7 +53,7 @@
                 <th>Status</th>
                 </thead>
                 <tbody>
-                <tr data-ng-class="{success: zookeeper.status == 'CONNECTED', active: zookeeper.status == 'CONNECTING', danger: zookeeper.status == 'DISCONNECTED'}"
+                <tr data-ng-class="{success: zookeeper.status == 'CONNECTED', warning: zookeeper.status == 'CONNECTING', danger: zookeeper.status == 'DISCONNECTED'}"
                     data-ng-repeat="zookeeper in developmentZookeepers">
                     <td>{{zookeeper.name}}</td>
                     <td>{{zookeeper.host}}</td>
@@ -74,7 +74,7 @@
                 <th>Status</th>
                 </thead>
                 <tbody>
-                <tr data-ng-class="{success: zookeeper.status == 'CONNECTED', active: zookeeper.status == 'CONNECTING', danger: zookeeper.status == 'DISCONNECTED'}"
+                <tr data-ng-class="{success: zookeeper.status == 'CONNECTED', warning: zookeeper.status == 'CONNECTING', danger: zookeeper.status == 'DISCONNECTED'}"
                     data-ng-repeat="zookeeper in productionZookeepers">
                     <td>{{zookeeper.name}}</td>
                     <td>{{zookeeper.host}}</td>
@@ -95,7 +95,7 @@
                 <th>Status</th>
                 </thead>
                 <tbody>
-                <tr data-ng-class="{success: zookeeper.status == 'CONNECTED', active: zookeeper.status == 'CONNECTING', danger: zookeeper.status == 'DISCONNECTED'}"
+                <tr data-ng-class="{success: zookeeper.status == 'CONNECTED', warning: zookeeper.status == 'CONNECTING', danger: zookeeper.status == 'DISCONNECTED'}"
                     data-ng-repeat="zookeeper in stagingZookeepers">
                     <td>{{zookeeper.name}}</td>
                     <td>{{zookeeper.host}}</td>
@@ -116,7 +116,7 @@
                 <th>Status</th>
                 </thead>
                 <tbody>
-                <tr data-ng-class="{success: zookeeper.status == 'CONNECTED', active: zookeeper.status == 'CONNECTING', danger: zookeeper.status == 'DISCONNECTED'}"
+                <tr data-ng-class="{success: zookeeper.status == 'CONNECTED', warning: zookeeper.status == 'CONNECTING', danger: zookeeper.status == 'DISCONNECTED'}"
                     data-ng-repeat="zookeeper in testZookeepers">
                     <td>{{zookeeper.name}}</td>
                     <td>{{zookeeper.host}}</td>
