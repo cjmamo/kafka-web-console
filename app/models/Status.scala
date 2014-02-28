@@ -26,6 +26,7 @@ object Status extends Enumeration {
   val Connecting = Value("CONNECTING")
   val Connected = Value("CONNECTED")
   val Disconnected = Value("DISCONNECTED")
+  val Deleted = Value("Deleted")
 
 }
 

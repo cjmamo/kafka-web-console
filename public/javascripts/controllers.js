@@ -52,6 +52,12 @@ app.controller("ZookeepersController", function ($scope, $http, $location) {
             $location.path("/");
         });
     };
+
+    $scope.removeZookeeper = function (zookeeper) {
+        $http.delete('/zookeepers.json/' + zookeeper.name).success(function () {
+            $location.path("/");
+        });
+    };
 });
 
 app.controller("TopicsController", function ($scope, $location, $http) {

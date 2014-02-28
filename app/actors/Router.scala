@@ -16,14 +16,14 @@
 
 package actors
 
-import akka.actor.{ActorRef, Actor}
+import akka.actor.Actor
+import play.api.libs.concurrent.Akka
+import play.api.Play.current
 
-class Router(val routees: List[ActorRef]) extends Actor {
+class Router extends Actor {
 
   override def receive: Actor.Receive = {
-    case message => routees.foreach(routee => {
-      routee.forward(message)
-    })
+    case message if (sender != self) => Akka.system.actorSelection("akka://application/user/*") ! message
   }
 
 }

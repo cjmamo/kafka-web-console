@@ -72,6 +72,10 @@ object Zookeeper {
     zookeepersTable.update(zookeeper)
   }
 
+  def delete(zookeeper: Zookeeper) = inTransaction {
+    zookeepersTable.delete(zookeeper.name)
+  }
+
   def update(zookeepers: Iterable[Zookeeper]) {
     inTransaction {
       zookeepersTable.update(zookeepers)

@@ -23,7 +23,6 @@ object Registry {
   object PropertyConstants extends Enumeration {
     type PropertyConstants = Value
     val ZookeeperConnections = Value("ZOOKEEPER-CONNECTIONS")
-    val Router = Value("ROUTER")
     val BroadcastChannel = Value("BROADCAST-CHANNEL")
   }
 
@@ -37,12 +36,14 @@ object Registry {
     this.lookupObject(propertyName.toString())
   }
 
-  def registerObject(name: String, value: Any) {
+  def registerObject[A](name: String, value: A): A = {
     properties = properties ++ Map(name -> value)
+    value
   }
 
-  def registerObject(name: PropertyConstants, value: Any) {
+  def registerObject[A](name: PropertyConstants, value: A): A = {
     this.registerObject(name.toString, value)
+    value
   }
 
 }

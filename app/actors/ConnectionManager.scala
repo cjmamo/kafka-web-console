@@ -37,66 +37,84 @@ import common.Util
 
 class ConnectionManager() extends Actor {
 
-  Registry.registerObject(PropertyConstants.ZookeeperConnections, Map[String, ZkClient]())
+  val router = Akka.system.actorSelection("akka://application/user/router")
+
+  override def preStart() {
+    for (zookeeper <- models.Zookeeper.findAll) {
+      router ! Message.Connect(zookeeper)
+    }
+  }
 
   override def receive: Actor.Receive = {
+    case connectMessage: Message.Connect => connect(connectMessage.zookeeper)
+    case connectNotification: Message.ConnectNotification => Zookeeper.upsert(connectNotification.zookeeper)
+    case disconnectMessage: Message.Disconnect => disconnect(disconnectMessage.zookeeper)
+    case Terminated => terminate()
+  }
 
-    case connectMessage: Message.Connect => {
+  private def connect(zk: Zookeeper) {
+    models.Zookeeper.findById(zk.id) match {
+      case Some(s) => if (s.statusId == Status.Deleted.id) return
+      case _ => return
+    }
 
-      val zk = connectMessage.zookeeper
+    val zkClient = getZkClient(zk, lookupZookeeperConnections())
 
-      val router = Registry.lookupObject(PropertyConstants.Router) match {
-        case Some(router: ActorRef) => router
-      }
-
-      val zkConnections: Map[String, ZkClient] = Registry.lookupObject(PropertyConstants.ZookeeperConnections) match {
-        case Some(zkConnections: Map[_, _]) => zkConnections.asInstanceOf[Map[String, ZkClient]]
-      }
-
-      val zkClient = zkConnections.filterKeys(_ == connectMessage.zookeeper.id) match {
-        case zk if zk.size > 0 => {
-          zk.head._2
-        }
-        case _ => {
-          val zkClient = ZkClient(zk.host + ":" + zk.port.toString, 6000 milliseconds, 6000 milliseconds)(new JavaTimer)
-          Registry.registerObject(PropertyConstants.ZookeeperConnections, Map(zk.id -> zkClient) ++ zkConnections)
-          zkClient
-        }
-      }
-
-      val onSessionEvent: PartialFunction[StateEvent, Unit] = {
-        case s: StateEvent if s.state == KeeperState.SyncConnected => {
-          router ! ConnectNotification(Zookeeper(zk.name, zk.host, zk.port, zk.groupId, Status.Connected.id))
-        }
-        case s: StateEvent if s.state == KeeperState.Disconnected => {
-          router ! ConnectNotification(Zookeeper(zk.name, zk.host, zk.port, zk.groupId, Status.Connecting.id))
-        }
-        case s: StateEvent if s.state == KeeperState.Expired => {
-          router ! ConnectNotification(Zookeeper(zk.name, zk.host, zk.port, zk.groupId, Status.Connecting.id))
-        }
-      }
-
-      zkClient.onSessionEvent(onSessionEvent)
-      val zookeeperFuture = zkClient()
-
-      zookeeperFuture.onFailure(_ => {
+    val onSessionEvent: PartialFunction[StateEvent, Unit] = {
+      case s: StateEvent if s.state == KeeperState.SyncConnected =>
+        router ! ConnectNotification(Zookeeper(zk.name, zk.host, zk.port, zk.groupId, Status.Connected.id))
+      case s: StateEvent if s.state == KeeperState.Disconnected =>
         router ! ConnectNotification(Zookeeper(zk.name, zk.host, zk.port, zk.groupId, Status.Connecting.id))
-        Akka.system.scheduler.scheduleOnce(
-          Duration.create(5, TimeUnit.SECONDS), self, Message.Connect(zk)
-        )
-      })
+      case s: StateEvent if s.state == KeeperState.Expired =>
+        router ! ConnectNotification(Zookeeper(zk.name, zk.host, zk.port, zk.groupId, Status.Connecting.id))
     }
 
-    case Terminated => {
-      shutdownConnections()
-    }
+    zkClient.onSessionEvent(onSessionEvent)
+
+    zkClient().onFailure(_ => {
+      router ! ConnectNotification(Zookeeper(zk.name, zk.host, zk.port, zk.groupId, Status.Connecting.id))
+      Akka.system.scheduler.scheduleOnce(
+        Duration.create(5, TimeUnit.SECONDS), self, Message.Connect(zk)
+      )
+    })
+  }
+
+  private def terminate() {
+    shutdownConnections()
+    Zookeeper.update(Zookeeper.findAll.map(z => Zookeeper(z.id, z.host, z.port, z.groupId, Status.Disconnected.id)))
   }
 
   private def shutdownConnections() {
     Registry.lookupObject(PropertyConstants.ZookeeperConnections) match {
-      case Some(s: Map[_, _]) => {
+      case Some(s: Map[_, _]) =>
         s.asInstanceOf[Map[String, ZkClient]].map(z => Await.result(Util.twitterToScalaFuture(z._2.release()), Duration.Inf))
-      }
+      case _ =>
+    }
+  }
+
+  private def getZkClient(zk: Zookeeper, zkConnections: Map[String, ZkClient]): ZkClient = {
+    zkConnections.filterKeys(_ == zk.id) match {
+      case zk if zk.size > 0 => zk.head._2
+      case _ =>
+        val zkClient = ZkClient(zk.toString, 6000 milliseconds, 6000 milliseconds)(new JavaTimer)
+        Registry.registerObject(PropertyConstants.ZookeeperConnections, Map(zk.id -> zkClient) ++ zkConnections)
+        zkClient
+    }
+  }
+
+  private def lookupZookeeperConnections(): Map[String, ZkClient] = {
+    Registry.lookupObject(PropertyConstants.ZookeeperConnections) match {
+      case Some(zkConnections: Map[_, _]) => zkConnections.asInstanceOf[Map[String, ZkClient]]
+      case _ => Registry.registerObject(PropertyConstants.ZookeeperConnections, Map[String, ZkClient]())
+    }
+  }
+
+  private def disconnect(zk: Zookeeper) {
+    lookupZookeeperConnections().get(zk.id) match {
+      case Some(zkClient) =>
+        zkClient.release()
+        Registry.registerObject(PropertyConstants.ZookeeperConnections, lookupZookeeperConnections().filterKeys(_ != zk.id))
+        Zookeeper.delete(models.Zookeeper.findById(zk.id).get)
       case _ =>
     }
   }

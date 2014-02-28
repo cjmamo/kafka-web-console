@@ -21,8 +21,9 @@ import play.api.data.{Form, Forms}
 import play.api.libs.json.Json
 import common.{Message, Registry}
 import Registry.PropertyConstants
-import akka.actor.ActorRef
-import play.api.libs.iteratee.{Concurrent, Enumerator, Iteratee}
+import play.api.libs.iteratee.{Enumerator, Iteratee}
+import play.api.Play.current
+import play.api.libs.concurrent.Akka
 
 object Zookeeper extends Controller {
 
@@ -58,18 +59,8 @@ object Zookeeper extends Controller {
 
         val zk = models.Zookeeper.insert(models.Zookeeper(name, host, port, models.Group.findByName(group.toUpperCase).get.id, models.Status.Disconnected.id))
 
-        try {
-          Registry.lookupObject(PropertyConstants.Router) match {
-            case Some(router: ActorRef) => router ! Message.Connect(zk)
-            case _ =>
-          }
-
-          Ok
-        }
-        catch {
-          case e: Exception => BadRequest
-        }
-
+        Akka.system.actorSelection("akka://application/user/router") ! Message.Connect(zk)
+        Ok
       }
 
     )
@@ -77,12 +68,19 @@ object Zookeeper extends Controller {
     result
   }
 
+  def delete(name: String) = Action {
+    val zk = models.Zookeeper.findById(name).get
+    models.Zookeeper.update(models.Zookeeper(zk.id, zk.host, zk.port, zk.groupId, models.Status.Deleted.id))
+    Akka.system.actorSelection("akka://application/user/router") ! Message.Disconnect(zk)
+    Ok
+  }
+
   def feed() = WebSocket.using[String] { implicit request =>
 
     val in = Iteratee.ignore[String]
 
     val out = Registry.lookupObject(PropertyConstants.BroadcastChannel) match {
-      case Some(broadcastChannel: (Enumerator[_], Concurrent.Channel[_])) => broadcastChannel._1.asInstanceOf[Enumerator[String]]
+      case Some(broadcastChannel: (_, _)) => broadcastChannel._1.asInstanceOf[Enumerator[String]]
       case _ => Enumerator.empty[String]
     }
 

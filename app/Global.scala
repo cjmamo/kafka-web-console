@@ -31,15 +31,14 @@ import scala.Some
 object Global extends GlobalSettings {
 
   override def onStart(app: Application) {
+    Registry.registerObject(PropertyConstants.BroadcastChannel, Concurrent.broadcast[String])
     initiateDb(app)
-    initiateManagers()
+    initiateActors()
   }
 
   override def onStop(app: Application) {
-    Registry.lookupObject(PropertyConstants.Router) match {
-      case Some(r: ActorRef) => r ! Terminated
-      case _ =>
-    }
+    val router = Akka.system.actorSelection("akka://application/user/router")
+    router ! Terminated
   }
 
   private def initiateDb(app: Application) {
@@ -48,18 +47,10 @@ object Global extends GlobalSettings {
     )
   }
 
-  private def initiateManagers() {
-    val connectionManager = Akka.system.actorOf(Props(new ConnectionManager()))
-    val databaseManager = Akka.system.actorOf(Props(new DatabaseManager()))
-    val clientManager = Akka.system.actorOf(Props(new ClientManager()))
-    val router = Akka.system.actorOf(Props(new Router(List(connectionManager, databaseManager, clientManager))))
-
-    Registry.registerObject(PropertyConstants.BroadcastChannel, Concurrent.broadcast[String])
-    Registry.registerObject(PropertyConstants.Router, router)
-
-    for (zookeeper <- models.Zookeeper.findAll) {
-      router ! Message.Connect(zookeeper)
-    }
+  private def initiateActors() {
+    Akka.system.actorOf(Props(new Router()), "router")
+    Akka.system.actorOf(Props(new ConnectionManager()))
+    Akka.system.actorOf(Props(new ClientNotificationManager()))
   }
 
 }

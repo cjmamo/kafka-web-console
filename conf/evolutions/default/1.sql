@@ -30,6 +30,7 @@ INSERT INTO groups (id, name) VALUES (4, 'TEST');
 INSERT INTO status (id, name) VALUES (0, 'CONNECTING');
 INSERT INTO status (id, name) VALUES (1, 'CONNECTED');
 INSERT INTO status (id, name) VALUES (2, 'DISCONNECTED');
+INSERT INTO status (id, name) VALUES (3, 'DELETED');
 
 # --- !Downs
 
