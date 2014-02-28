@@ -6,19 +6,19 @@ It allows you from your web browser to view:
 
    - Registered brokers
    
-    ![brokers](/img/brokers.png)
+![brokers](/img/brokers.png)
    
    - Topics and their partitions
    
-    ![topics](/img/topics.png)
+![topics](/img/topics.png)
    
    - Consumer groups, individual consumers, and current partition offsets
     
-    ![topic](/img/topic.png)
+![topic](/img/topic.png)
 
    - Latest published topic messages
 
-    ![topic feed](/img/topic-feed.png)
+![topic feed](/img/topic-feed.png)
 
 On top of all this, the console provides a JSON API.
 
