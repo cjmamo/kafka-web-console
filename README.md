@@ -16,7 +16,7 @@ It allows you from your web browser to view:
 
 ***
 
-   - Consumer groups, individual consumers, and current partition offsets
+   - Consumer groups, individual consumers, and partition offsets for each consumer group
     
 ![topic](/img/topic.png)
 
