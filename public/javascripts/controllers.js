@@ -16,23 +16,31 @@ app.controller("ZookeepersController", function ($scope, $http, $location) {
     var ws = new WebSocket('ws://' + $location.host() + ':' + $location.port() + '/zookeepers.json/feed');
 
     ws.onmessage = function (message) {
-        var serverZookeeper = angular.fromJson(message.data);
-        var modelName = angular.lowercase(serverZookeeper.group) + 'Zookeepers';
+        var serverZk = angular.fromJson(message.data);
+        var modelName = angular.lowercase(serverZk.group) + 'Zookeepers';
         var isNewZookeeper = true;
 
-        angular.forEach($scope[modelName], function (clientZookeeper) {
-                if (clientZookeeper.name === serverZookeeper.name) {
-                    clientZookeeper.status = serverZookeeper.status;
+        angular.forEach($scope[modelName], function (clientZk) {
+                if (clientZk.name === serverZk.name) {
+                    clientZk.status = serverZk.status;
+                    isNewZookeeper = false;
+                }
+            }
+        );
+
+        angular.forEach($scope['allZookeepers'], function (clientZk) {
+                if (clientZk.name === serverZk.name) {
+                    clientZk.status = serverZk.status;
                     isNewZookeeper = false;
                 }
             }
         );
 
         if (isNewZookeeper && typeof($scope[modelName]) !== 'undefined') {
-            $scope[modelName].push(serverZookeeper);
+            $scope[modelName].push(serverZk);
         }
         else if (typeof($scope[modelName]) === 'undefined') {
-            $scope[modelName] = [serverZookeeper];
+            $scope[modelName] = [serverZk];
         }
 
         $scope.$apply();
