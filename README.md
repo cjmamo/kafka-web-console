@@ -6,7 +6,7 @@ It allows you from your web browser to view:
 
    - Registered brokers
    
-
+    ![brokers](/img/brokers.png)
    
    - Topics and their partitions
    
