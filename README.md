@@ -26,6 +26,8 @@ It allows you from your web browser to view:
 
 ![topic feed](/img/topic-feed.png)
 
+***
+
 On top of all this, the console provides a JSON API.
 
 Deployment
