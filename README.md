@@ -13,10 +13,14 @@ It allows you from your web browser to view:
    - Topics and their partitions
    
 ![topics](/img/topics.png)
-   
+
+***
+
    - Consumer groups, individual consumers, and current partition offsets
     
 ![topic](/img/topic.png)
+
+***
 
    - Latest published topic messages
 
