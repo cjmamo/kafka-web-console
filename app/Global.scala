@@ -37,8 +37,7 @@ object Global extends GlobalSettings {
   }
 
   override def onStop(app: Application) {
-    val router = Akka.system.actorSelection("akka://application/user/router")
-    router ! Terminated
+    Akka.system.actorSelection("akka://application/user/router") ! Terminated
   }
 
   private def initiateDb(app: Application) {
