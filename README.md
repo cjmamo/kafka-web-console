@@ -47,7 +47,7 @@ Getting Started
    - DB2
    - MySQL
    - Apache Derby
-   - Microsoft SQL Server<br/>
+   - Microsoft SQL Server<br/><br/>
 2. Before you can monitor a broker, you need to register the Zookeeper server associated with it:
 
 ![register zookeeper](/img/register-zookeeper.png)
