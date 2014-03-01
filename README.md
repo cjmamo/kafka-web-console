@@ -32,6 +32,7 @@ Requirements
 ---
 - Play Framework 2.2.x
 - Apache Kafka 0.8.0
+- Zookeeper 3.3.3
 
 Deployment
 ----
