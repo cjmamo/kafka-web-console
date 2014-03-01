@@ -41,7 +41,6 @@ Consult Play!'s documentation for [deployment options and instructions](http://w
 Getting Started
 ---
 1. Kafka Web Console requires a relational database. Consult Play!'s documentation to [specify the database to be used by the console](http://www.playframework.com/documentation/2.2.x/ScalaDatabase). The following databases are supported:
-
    - H2
    - PostgreSql
    - Oracle
@@ -49,7 +48,6 @@ Getting Started
    - MySQL
    - Apache Derby
    - Microsoft SQL Server
-
 2. Before you can monitor a broker, you need to register the Zookeeper server associated with it:
 
 ![register zookeeper](/img/register-zookeeper.png)
