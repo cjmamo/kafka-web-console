@@ -1,8 +1,6 @@
 Kafka Web Console
 =========
-Kafka Web Console is a Java web application for monitoring Apache Kafka.
-
-It allows you from your web browser to view:
+Kafka Web Console is a Java web application for monitoring [Apache Kafka](http://kafka.apache.org/). With a **modern** web browser, you can view from the console:
 
    - Registered brokers
    
@@ -22,31 +20,43 @@ It allows you from your web browser to view:
 
 ***
 
-   - Latest published topic messages
+   - Latest published topic messages (requires web browser support for WebSocket)
 
 ![topic feed](/img/topic-feed.png)
 
 ***
 
-On top of all this, the console provides a JSON API.
+Furthermore, the console provides a JSON API.
+
+Requirements
+---
+- Play Framework 2.2.x
+- Apache Kafka 0.8.0
 
 Deployment
 ----
-
-Consult Play Framework's documentation for [deployment options and instructions](http://www.playframework.com/documentation/2.2.x/Production).
+Consult Play!'s documentation for [deployment options and instructions](http://www.playframework.com/documentation/2.2.x/Production).
 
 Getting Started
 ---
+1. Kafka Web Console requires a relational database. Consult Play!'s documentation to [specify the database to be used by the console](http://www.playframework.com/documentation/2.2.x/ScalaDatabase). The following databases are supported:
 
-Kafka Web Console depends on Apache Zookeeper to retrieve information about brokers, consumer groups, and other entities. Therefore, the first step to configuring the console is to register a Zookeeper server.
+   - H2
+   - PostgreSql
+   - Oracle
+   - DB2
+   - MySQL
+   - Apache Derby
+   - Microsoft SQL Server
+<br/><br/>
+2. Before you can monitor a broker, you need to register the Zookeeper server associated with it:
 
 ![register zookeeper](/img/register-zookeeper.png)
 
-Filling in the form and clicking on *Connect* will register the Zookeeper. Once the console has successfully established a connection with the registered Zookeeper server, it wil retrieve all necessary information about brokers, topics, and consumers.
+Filling in the form and clicking on *Connect* will register the Zookeeper server. Once the console has successfully established a connection with the registered Zookeeper server, it can retrieve all necessary information about brokers, topics, and consumers.
 
 ![zookeepers](/img/zookeepers.png)
 
-
 Support
 ---
-Please [report](http://github.com/claudemamo/kafka-web-console/issues) bugs or desired features.
+Please [report](http://github.com/claudemamo/kafka-web-console/issues) any bugs or desired features.
