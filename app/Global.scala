@@ -14,10 +14,11 @@
  * the License.
  */
 
-import akka.actor.{Terminated, Props, ActorRef}
-import common.{Message, Registry}
+import akka.actor.{Terminated, Props}
+import common.Registry
 import actors._
-import org.squeryl.adapters.H2Adapter
+import org.squeryl.adapters._
+import org.squeryl.internals.DatabaseAdapter
 import org.squeryl.{Session, SessionFactory}
 import play.api.db.DB
 import play.api.libs.concurrent.Akka
@@ -41,10 +42,19 @@ object Global extends GlobalSettings {
   }
 
   private def initiateDb(app: Application) {
-    SessionFactory.concreteFactory = Some(() =>
-      Session.create(DB.getConnection()(app), new H2Adapter)
-    )
+    SessionFactory.concreteFactory = app.configuration.getString("db.default.driver") match {
+      case Some("org.h2.Driver") => Some(() => getSession(new H2Adapter, app))
+      case Some("org.postgresql.Driver") => Some(() => getSession(new PostgreSqlAdapter, app))
+      case Some("oracle.jdbc.OracleDriver") => Some(() => getSession(new OracleAdapter, app))
+      case Some("com.ibm.db2.jcc.DB2Driver") => Some(() => getSession(new DB2Adapter, app))
+      case Some("com.mysql.jdbc.Driver") => Some(() => getSession(new MySQLAdapter, app))
+      case Some("org.apache.derby.jdbc.EmbeddedDriver") => Some(() => getSession(new DerbyAdapter, app))
+      case Some("com.microsoft.sqlserver.jdbc.SQLServerDriver") => Some(() => getSession(new MSSQLServer, app))
+      case _ => sys.error("Database driver must be either org.h2.Driver, org.postgresql.Driver, oracle.jdbc.OracleDriver, com.ibm.db2.jcc.DB2Driver, com.mysql.jdbc.Driver, org.apache.derby.jdbc.EmbeddedDriver or com.microsoft.sqlserver.jdbc.SQLServerDriver")
+    }
   }
+
+  private def getSession(adapter: DatabaseAdapter, app: Application) = Session.create(DB.getConnection()(app), adapter)
 
   private def initiateActors() {
     Akka.system.actorOf(Props(new Router()), "router")
