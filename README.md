@@ -49,12 +49,12 @@ Getting Started
    - MySQL
    - Apache Derby
    - Microsoft SQL Server
-<br/><br/>
+
 2. Before you can monitor a broker, you need to register the Zookeeper server associated with it:
 
 ![register zookeeper](/img/register-zookeeper.png)
 
-Filling in the form and clicking on *Connect* will register the Zookeeper server. Once the console has successfully established a connection with the registered Zookeeper server, it can retrieve all necessary information about brokers, topics, and consumers.
+Filling in the form and clicking on *Connect* will register the Zookeeper server. Once the console has successfully established a connection with the registered Zookeeper server, it can retrieve all necessary information about brokers, topics, and consumers:
 
 ![zookeepers](/img/zookeepers.png)
 
