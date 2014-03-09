@@ -78,7 +78,7 @@ object Topic extends Controller {
   def index = Action.async {
     val topicsZks = connectedZookeepers { (zk, zkClient) =>
       for {
-      // possible for topics without partitions in Zookeeper
+        // it's possible for topics without partitions in Zookeeper
         allTopicNodes <- getZChildren(zkClient, "/brokers/topics/*")
         allTopics = allTopicNodes.map(p => (p.path.split("/").filter(_ != "")(2), Seq[String]())).toMap
         partitions <- getZChildren(zkClient, "/brokers/topics/*/partitions/*")
@@ -93,9 +93,9 @@ object Topic extends Controller {
     val connectedZks = connectedZookeepers((z, c) => (z, c)).filter(_._1.name == zookeeper)
 
     if (connectedZks.size > 0) {
-      val (_, zkClient) = connectedZks.head
+      val (zk, zkClient) = connectedZks.head
       val partitionsOffsetsAndConsumersFuture = for {
-      // it's possible that a offset dir hasn't been created yet for some consumers
+        // it's possible that a offset dir hasn't been created yet for some consumers
         ownedTopicNodes <- getZChildren(zkClient, "/consumers/*/owners/" + name)
 
         allConsumers = ownedTopicNodes.map(n => n.path.split("/").filter(_ != "")(1))

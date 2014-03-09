@@ -20,10 +20,20 @@ import models.{Status, Zookeeper}
 
 object Message {
 
-  case class Connect(val zookeeper: Zookeeper)
-  case class Disconnect(val zookeeper: Zookeeper)
-  case class ConnectNotification(val zookeeper: Zookeeper)
-  case class StatusNotification(val status: Status)
+  case class Connect(zookeeper: Zookeeper)
+
+  case class Disconnect(zookeeper: Zookeeper)
+
+  case class ConnectNotification(zookeeper: Zookeeper)
+
+  case class StatusNotification(status: Status)
+
   case class Terminate()
+
+  object ConnectNotification {
+    def apply(zk: Zookeeper, status: Status.Value): ConnectNotification = {
+      ConnectNotification(Zookeeper(zk.name, zk.host, zk.port, zk.groupId, status.id, zk.chroot))
+    }
+  }
 
 }
