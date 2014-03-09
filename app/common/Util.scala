@@ -47,6 +47,7 @@ object Util {
 
   def getZChildren(zkClient: ZkClient, path: String): Future[Seq[ZNode]] = {
     val nodes = path.split('/').filter(_ != "").toList
+
     getZChildren(zkClient("/"), nodes)
   }
 

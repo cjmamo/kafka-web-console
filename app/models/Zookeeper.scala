@@ -36,7 +36,8 @@ object Zookeeper {
         "host" -> zookeeper.host,
         "port" -> zookeeper.port,
         "group" -> Group.apply(zookeeper.groupId.toInt).toString,
-        "status" -> Status.apply(zookeeper.statusId.toInt).toString
+        "status" -> Status.apply(zookeeper.statusId.toInt).toString,
+        "chroot" -> zookeeper.chroot
       )
     }
   }
@@ -83,10 +84,10 @@ object Zookeeper {
   }
 }
 
-case class Zookeeper(@Column("name") id: String, host: String, port: Int, groupId: Long, statusId: Long)
+case class Zookeeper(@Column("name") id: String, host: String, port: Int, groupId: Long, statusId: Long, chroot: String)
   extends KeyedEntity[String] {
 
   def name = id
 
-  override def toString = "%s:%s".format(host, port)
+  override def toString = "%s:%s/%s".format(host, port, chroot)
 }

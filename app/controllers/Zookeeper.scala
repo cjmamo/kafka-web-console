@@ -18,6 +18,7 @@ package controllers
 
 import play.api.mvc._
 import play.api.data.{Form, Forms}
+import play.api.data.Forms._
 import play.api.libs.json.Json
 import common.{Message, Registry}
 import Registry.PropertyConstants
@@ -31,7 +32,8 @@ object Zookeeper extends Controller {
     "name" -> Forms.text,
     "host" -> Forms.text,
     "port" -> Forms.number,
-    "group" -> Forms.text
+    "group" -> Forms.text,
+    "chroot" -> optional(Forms.text)
   )
 
   def index(group: String) = Action {
@@ -56,8 +58,12 @@ object Zookeeper extends Controller {
         val host: String = formSuccess._2
         val port: Int = formSuccess._3
         val group: String = formSuccess._4
+        val chroot: String = formSuccess._5 match {
+          case Some(s) => s
+          case _ => ""
+        }
 
-        val zk = models.Zookeeper.insert(models.Zookeeper(name, host, port, models.Group.findByName(group.toUpperCase).get.id, models.Status.Disconnected.id))
+        val zk = models.Zookeeper.insert(models.Zookeeper(name, host, port, models.Group.findByName(group.toUpperCase).get.id, models.Status.Disconnected.id, chroot))
 
         Akka.system.actorSelection("akka://application/user/router") ! Message.Connect(zk)
         Ok
@@ -70,7 +76,7 @@ object Zookeeper extends Controller {
 
   def delete(name: String) = Action {
     val zk = models.Zookeeper.findById(name).get
-    models.Zookeeper.update(models.Zookeeper(zk.id, zk.host, zk.port, zk.groupId, models.Status.Deleted.id))
+    models.Zookeeper.update(models.Zookeeper(zk.id, zk.host, zk.port, zk.groupId, models.Status.Deleted.id, zk.chroot))
     Akka.system.actorSelection("akka://application/user/router") ! Message.Disconnect(zk)
     Ok
   }
