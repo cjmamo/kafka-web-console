@@ -1,6 +1,6 @@
 name := "kafka-web-console"
 
-version := "1.1.0-SNAPSHOT"
+version := "1.1.0"
 
 libraryDependencies ++= Seq(
   jdbc,
