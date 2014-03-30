@@ -98,10 +98,6 @@ class PartitionTopicInfo[K, V](val topic: String,
       if (currentMessage.offset > getConsumeOffset) {
         currentMessage.message.ensureValid()
 
-        val keyBuffer = currentMessage.message.key
-        val key = if (keyBuffer == null) null.asInstanceOf[K] else keyDecoder.fromBytes(Utils.readBytes(keyBuffer))
-        val value = valueDecoder.fromBytes(Utils.readBytes(currentMessage.message.payload))
-
         if (getConsumeOffset() < 0)
           throw new KafkaException("Offset returned by the message set is invalid %d".format(getConsumeOffset))
 
@@ -111,7 +107,7 @@ class PartitionTopicInfo[K, V](val topic: String,
         consumerTopicStats.getConsumerTopicStats(topic).messageRate.mark()
         consumerTopicStats.getConsumerAllTopicStats().messageRate.mark()
 
-        cb(new MessageAndMetadata(key, value, topic, partitionId, currentMessage.offset))
+        cb(new MessageAndMetadata(topic, partitionId, currentMessage.message, currentMessage.offset, keyDecoder, valueDecoder))
       }
     }
   }

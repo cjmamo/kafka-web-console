@@ -135,8 +135,11 @@ private[kafka] class ZookeeperConsumerConnector(val config: ConsumerConfig,
   if (config.autoCommitEnable) {
     scheduler.startup
     info("starting auto committer every " + config.autoCommitIntervalMs + " ms")
-    scheduler.scheduleWithRate(autoCommit, "Kafka-consumer-autocommit-", config.autoCommitIntervalMs,
-      config.autoCommitIntervalMs, false)
+    scheduler.schedule("kafka-consumer-autocommit",
+      autoCommit,
+      delay = config.autoCommitIntervalMs,
+      period = config.autoCommitIntervalMs,
+      unit = TimeUnit.MILLISECONDS)
   }
 
   KafkaMetricsReporter.startReporters(config.props)
@@ -182,7 +185,7 @@ private[kafka] class ZookeeperConsumerConnector(val config: ConsumerConfig,
           wildcardTopicWatcher.shutdown()
         try {
           if (config.autoCommitEnable)
-	        scheduler.shutdownNow()
+	        scheduler.shutdown()
           fetcher match {
             case Some(f) => f.stopConnections
             case None =>
@@ -224,11 +227,11 @@ private[kafka] class ZookeeperConsumerConnector(val config: ConsumerConfig,
   private def registerConsumerInZK(dirs: ZKGroupDirs, consumerIdString: String, topicCount: TopicCount) {
     info("begin registering consumer " + consumerIdString + " in ZK")
     val timestamp = SystemTime.milliseconds.toString
-    val consumerRegistrationInfo =
-      Utils.mergeJsonFields(Utils.mapToJsonFields(Map("version" -> 1.toString, "subscription" -> topicCount.dbString), valueInQuotes = false)
-                             ++ Utils.mapToJsonFields(Map("pattern" -> topicCount.pattern, "timestamp" -> timestamp), valueInQuotes = true))
+    val consumerRegistrationInfo = Json.encode(Map("version" -> 1, "subscription" -> topicCount.getTopicCountMap, "pattern" -> topicCount.pattern,
+      "timestamp" -> timestamp))
 
-    createEphemeralPathExpectConflictHandleZKBug(zkClient, dirs.consumerRegistryDir + "/" + consumerIdString, consumerRegistrationInfo, null, (consumerZKString, consumer) => true, config.zkSessionTimeoutMs)
+    createEphemeralPathExpectConflictHandleZKBug(zkClient, dirs.consumerRegistryDir + "/" + consumerIdString, consumerRegistrationInfo, null,
+      (consumerZKString, consumer) => true, config.zkSessionTimeoutMs)
     info("end registering consumer " + consumerIdString + " in ZK")
   }
 
@@ -666,19 +669,11 @@ private[kafka] class ZookeeperConsumerConnector(val config: ConsumerConfig,
     topicAndCallback = (for(threadIdsPerTopic <- wildcardTopicCount.getConsumerThreadIdsPerTopic) yield (threadIdsPerTopic._1, cb)).asInstanceOf[Map[String, MessageAndMetadata[_,_] => Unit]]
     reinitializeConsumer(wildcardTopicCount, keyDecoder, valueDecoder)
 
-    if (!topicFilter.requiresTopicEventWatcher) {
-      info("Not creating event watcher for trivial whitelist " + topicFilter)
-    }
-    else {
-      info("Creating topic event watcher for whitelist " + topicFilter)
-      wildcardTopicWatcher = new ZookeeperTopicEventWatcher(config, this)
-
-      /*
-       * Topic events will trigger subsequent synced rebalances. Also, the
-       * consumer will get registered only after an allowed topic becomes
-       * available.
-       */
-    }
+    /*
+     * Topic events will trigger subsequent synced rebalances.
+     */
+    info("Creating topic event watcher for topics " + topicFilter)
+    wildcardTopicWatcher = new ZookeeperTopicEventWatcher(zkClient, this)
 
     def handleTopicEvent(allTopics: Seq[String]) {
       debug("Handling topic event")
