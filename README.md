@@ -31,7 +31,7 @@ Furthermore, the console provides a JSON API.
 Requirements
 ---
 - Play Framework 2.2.x
-- Apache Kafka 0.8.1
+- Apache Kafka 0.8.x
 - Zookeeper 3.3.3
 
 Deployment
