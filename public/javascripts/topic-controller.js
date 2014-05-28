@@ -1,23 +1,13 @@
-app.controller("TopicController", function ($http, $scope, $location, $routeParams) {
-    var maxPartitionCount = 0;
+app.controller("TopicController", function ($http, $scope, $location, $routeParams, $filter) {
     $http.get('/topics.json/' + $routeParams.name + '/' + $routeParams.zookeeper).success(function (data) {
         $scope.topic = data;
         angular.forEach($scope.topic, function (consumerGroup) {
-            consumerGroup['consumers'] = [];
+            angular.forEach(consumerGroup.partitions, function (partition) {
+                partition.id = parseInt(partition.id)
+            });
 
-            angular.forEach(consumerGroup.offsets, function (offset) {
-                offset.partition = parseInt(offset.partition)
-            })
-
-            maxPartitionCount = consumerGroup.offsets.length;
-
-            if (maxPartitionCount < consumerGroup.offsets.length) {
-                maxPartitionCount = consumerGroup.offsets.length;
-            }
+            consumerGroup.partitions = $filter('orderObjectBy')(consumerGroup.partitions, 'id')
         });
-
-        $scope.maxPartitionCount = new Array(maxPartitionCount);
-
     });
 
     var ws = new WebSocket('ws://' + $location.host() + ':' + $location.port() + '/topics.json/' + $routeParams.name + '/' + $routeParams.zookeeper + '/feed');

@@ -8,36 +8,33 @@
         <div class="table-responsive">
             <table class="table">
                 <thead>
-
+                <th></th>
                 <th>Consumer Group</th>
-                <th colspan="3">Partition Offsets</th>
-                <tr>
-                    <th colspan="1" ng-hide="maxPartitionCount.length < 1"></th>
-                    <th data-ng-repeat="partitionNo in maxPartitionCount track by $index">{{$index}}</th>
-                </tr>
+                <th>Partition</th>
+                <th>Offset</th>
+                <th>Lag</th>
+                <th>Owner</th>
                 </thead>
-                <tbody>
-                <tr data-ng-repeat="consumerGroup in topic">
+                <tbody data-ng-repeat="consumerGroup in topic">
+                <tr>
                     <td>
-                        <div class="panel-group" id="accordion">
-                            <div class="panel panel-default">
-                                <a data-toggle="collapse" data-target="#collapse{{consumerGroup.consumerGroup}}"
-                                   data-ng-click="getConsumerGroup(consumerGroup.consumerGroup)"
-                                   data-parent="#accordion">{{consumerGroup.consumerGroup}}   <i class="fa fa-caret-down"></i></a>
-                            </div>
-                        </div>
-                        <div id="collapse{{consumerGroup.consumerGroup}}" class="panel-collapse collapse">
-                            <div class="panel-body">
-                                <ul class="list-group">
-                                    <li data-ng-repeat="consumer in consumerGroup.consumers" class="list-group-item">
-                                        {{consumer}}
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
+                        <i class="fa fa-minus-square fa-lg" data-ng-if="consumerGroup.expanded" data-ng-click="consumerGroup.expanded = false"/>
+                        <i class="fa fa-plus-square fa-lg" data-ng-if="!consumerGroup.expanded" data-ng-click="consumerGroup.expanded = true"/>
                     </td>
-                    <td data-ng-repeat="offset in consumerGroup.offsets | orderObjectBy:'partition'">{{offset.offset}}
-                    </td>
+                    <td>{{consumerGroup.consumerGroup}}</td>
+                    <td></td>
+                    <td>{{consumerGroup.offset}}</td>
+                    <td>{{consumerGroup.lag}}</td>
+                    <td></td>
+                </tr>
+                <tr data-ng-if="consumerGroup.expanded" class="row-animation"
+                    data-ng-repeat="partition in consumerGroup.partitions track by $index">
+                    <td></td>
+                    <td></td>
+                    <td>{{$index}}</td>
+                    <td>{{partition.offset}}</td>
+                    <td>{{partition.lag}}</td>
+                    <td>{{partition.owner}}</td>
                 </tr>
                 </tbody>
             </table>

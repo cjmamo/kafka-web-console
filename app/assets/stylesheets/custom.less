@@ -149,6 +149,60 @@ body {
   }
 }
 
-.dots{
+.dots {
   display: inline
+}
+
+.row-animation.ng-enter {
+  -webkit-animation: enter_sequence;
+  animation: enter_sequence;
+  -webkit-animation-duration: 0.5s;
+  animation-duration: 0.5s;
+  -webkit-animation-fill-mode: both;
+  animation-fill-mode: both;
+}
+
+.row-animation.ng-leave {
+  -webkit-animation: leave_sequence;
+  animation: leave_sequence;
+  -webkit-animation-duration: 0.2s;
+  animation-duration: 0.2s;
+  -webkit-animation-fill-mode: both;
+  animation-fill-mode: both;
+}
+
+@-webkit-keyframes enter_sequence {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes enter_sequence {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@-webkit-keyframes leave_sequence {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes leave_sequence {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }

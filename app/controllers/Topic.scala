@@ -32,8 +32,10 @@ import kafka.serializer.StringDecoder
 import kafka.consumer.async.Consumer
 import kafka.consumer.ConsumerConfig
 import java.util.Properties
-import com.twitter.zk.ZkClient
+import com.twitter.zk.{ZNode, ZkClient}
 import scala.util.Random
+import okapies.finagle.Kafka
+import kafka.api.OffsetRequest
 
 object Topic extends Controller {
 
@@ -43,7 +45,7 @@ object Topic extends Controller {
 
         val js = t.map { e =>
           val v = e._2 match {
-            case v: Seq[_] => Json.toJson(e._2.asInstanceOf[Seq[String]])
+            case v: Seq[_] => Json.toJson(e._2.asInstanceOf[Seq[Map[String, String]]])
             case v => Json.toJson(v.toString)
           }
           (e._1, v)
@@ -57,13 +59,11 @@ object Topic extends Controller {
 
   object TopicWrites extends Writes[List[Map[String, Object]]] {
     def writes(l: List[Map[String, Object]]) = {
-      val topics = l.map { t =>
+      val topic = l.map { t =>
 
         val js = t.map { e =>
           val v = e._2 match {
-            case v: Seq[_] => {
-              Json.toJson(e._2.asInstanceOf[Seq[Map[String, String]]])
-            }
+            case v: Seq[_] => Json.toJson(e._2.asInstanceOf[Seq[Map[String, String]]])
             case v => Json.toJson(v.toString)
           }
           (e._1, v)
@@ -71,19 +71,25 @@ object Topic extends Controller {
 
         JsObject(js)
       }
-      JsArray(topics)
+      JsArray(topic)
     }
   }
 
   def index = Action.async {
     val topicsZks = connectedZookeepers { (zk, zkClient) =>
       for {
-        // it's possible for topics without partitions in Zookeeper
+      // it's possible to have topics without partitions in Zookeeper
         allTopicNodes <- getZChildren(zkClient, "/brokers/topics/*")
         allTopics = allTopicNodes.map(p => (p.path.split("/").filter(_ != "")(2), Seq[String]())).toMap
         partitions <- getZChildren(zkClient, "/brokers/topics/*/partitions/*")
+
         topics = partitions.map(p => (p.path.split("/").filter(_ != "")(2), p.name)).groupBy(_._1).map(e => e._1 -> e._2.map(_._2))
-      } yield (allTopics ++ topics).map(e => Map("name" -> e._1, "partitions" -> e._2, "zookeeper" -> zk.name)).toList
+
+        topicsAndPartitionsAndZookeeper = (allTopics ++ topics).map(e => Map("name" -> e._1, "partitions" -> e._2, "zookeeper" -> zk.name)).toList
+
+        topicsAndPartitionsAndZookeeperAndLogSize <- createTopicsInfo(topicsAndPartitionsAndZookeeper, zkClient)
+
+      } yield topicsAndPartitionsAndZookeeperAndLogSize
     }
 
     Future.sequence(topicsZks).map(l => Ok(Json.toJson(l.flatten)(TopicsWrites)))
@@ -93,25 +99,16 @@ object Topic extends Controller {
     val connectedZks = connectedZookeepers((z, c) => (z, c)).filter(_._1.name == zookeeper)
 
     if (connectedZks.size > 0) {
-      val (zk, zkClient) = connectedZks.head
-      val partitionsOffsetsAndConsumersFuture = for {
-        // it's possible that a offset dir hasn't been created yet for some consumers
-        ownedTopicNodes <- getZChildren(zkClient, "/consumers/*/owners/" + name)
+      val (_, zkClient) = connectedZks.head
 
-        allConsumers = ownedTopicNodes.map(n => n.path.split("/").filter(_ != "")(1))
-        offsetsPartitionsNodes <- getZChildren(zkClient, "/consumers/*/offsets/" + name + "/*")
-        consumersAndPartitionsAndOffsets <- Future.sequence(offsetsPartitionsNodes.map(p => twitterToScalaFuture(p.getData().map(d => (p.path.split("/")(2), p.name, new String(d.bytes))))))
-        partitionsOffsetsAndConsumers = consumersAndPartitionsAndOffsets.groupBy(_._1).map { s =>
-          Map("consumerGroup" -> s._1, "offsets" -> s._2.map { t =>
-            Map("partition" -> t._2, "offset" -> t._3)
-          })
-        }.toList
-        diff = allConsumers.filterNot { ac =>
-          partitionsOffsetsAndConsumers.map(c => ac == c("consumerGroup")).contains(true)
-        }
+      val topicInfo = for {
+        leaders <- getPartitionLeaders(name, zkClient)
+        partitionsLogSize <- getPartitionsLogSize(name, leaders)
+        owners <- getPartitionOwners(name, zkClient)
+        consumersAndPartitionsAndOffsets <- getPartitionOffsets(name, zkClient)
+      } yield createTopicInfo(consumersAndPartitionsAndOffsets, partitionsLogSize, owners)
 
-      } yield diff.map(cg => Map("consumerGroup" -> cg, "offsets" -> Nil)).toList ++ partitionsOffsetsAndConsumers
-      partitionsOffsetsAndConsumersFuture.map(poc => Ok(Json.toJson(poc)(TopicWrites)))
+      topicInfo.map(poc => Ok(Json.toJson(poc)(TopicWrites)))
     }
     else {
       Future(Ok(Json.toJson(List[String]())))
@@ -149,14 +146,81 @@ object Topic extends Controller {
   }
 
   private def createConsumerConfig(zookeeperAddress: String, gid: String): ConsumerConfig = {
-    val props = new Properties();
-    props.put("zookeeper.connect", zookeeperAddress);
-    props.put("group.id", gid);
-    props.put("zookeeper.session.timeout.ms", "400");
-    props.put("zookeeper.sync.time.ms", "200");
-    props.put("auto.commit.interval.ms", "1000");
+    val props = new Properties()
+    props.put("zookeeper.connect", zookeeperAddress)
+    props.put("group.id", gid)
+    props.put("zookeeper.session.timeout.ms", "400")
+    props.put("zookeeper.sync.time.ms", "200")
+    props.put("auto.commit.interval.ms", "1000")
 
-    return new ConsumerConfig(props);
+    return new ConsumerConfig(props)
+  }
+
+  private def getPartitionLeaders(topicName: String, zkClient: ZkClient): Future[Seq[String]] = {
+    return for {
+      partitionStates <- getZChildren(zkClient, "/brokers/topics/" + topicName + "/partitions/*/state")
+      partitionsData <- Future.sequence(partitionStates.map(p => twitterToScalaFuture(p.getData())))
+      brokerIds = partitionsData.map(d => scala.util.parsing.json.JSON.parseFull(new String(d.bytes)).get.asInstanceOf[Map[String, Any]].get("leader").get)
+      brokers <- Future.sequence(brokerIds.map(bid => getZChildren(zkClient, "/brokers/ids/" + bid.toString.toDouble.toInt)))
+      brokersData <- Future.sequence(brokers.flatten.map(d => twitterToScalaFuture(d.getData())))
+      brokersInfo = brokersData.map(d => scala.util.parsing.json.JSON.parseFull(new String(d.bytes)).get.asInstanceOf[Map[String, Any]])
+    } yield brokersInfo.map(bi => bi.get("host").get + ":" + bi.get("port").get.toString.toDouble.toInt)
+  }
+
+  private def getPartitionsLogSize(topicName: String, partitionLeaders: Seq[String]): Future[Seq[Long]] = {
+    return for {
+      clients <- Future.sequence(partitionLeaders.map(addr => Future(Kafka.newRichClient(addr))))
+      partitionsLogSize <- Future.sequence(clients.zipWithIndex.map { e =>
+        val offset = twitterToScalaFuture(e._1.offset(topicName, e._2, OffsetRequest.LatestTime)).map(_.offsets.head)
+        e._1.close()
+        offset
+      })
+    } yield partitionsLogSize
+  }
+
+  private def getPartitionOwners(topicName: String, zkClient: ZkClient): Future[Seq[(String, String, String)]] = {
+    return for {
+      owners <- getZChildren(zkClient, "/consumers/*/owners/" + topicName + "/" + "*")
+      ownerIds <- Future.sequence(owners.map(z => twitterToScalaFuture(z.getData().map(d => (z.path.split("/")(2), z.path.split("/")(5), new String(d.bytes))))))
+    } yield ownerIds
+  }
+
+  private def getPartitionOffsets(topicName: String, zkClient: ZkClient): Future[Seq[(String, String, String)]] = {
+    return for {
+      offsetsPartitionsNodes <- getZChildren(zkClient, "/consumers/*/offsets/" + topicName + "/*")
+      consumersAndPartitionsAndOffsets <- Future.sequence(offsetsPartitionsNodes.map(p => twitterToScalaFuture(p.getData().map(d => (p.path.split("/")(2), p.name, new String(d.bytes))))))
+    } yield consumersAndPartitionsAndOffsets
+  }
+
+  private def createTopicInfo(consumersAndPartitionsAndOffsets: Seq[(String, String, String)], partitionsLogSize: Seq[Long],
+                              owners: Seq[(String, String, String)]): List[Map[String, Object]] = {
+    consumersAndPartitionsAndOffsets.groupBy(_._1).map { t =>
+      val offsetSum = t._2.map(_._3.toInt).foldLeft(0)(_ + _)
+      val partitionsLogSizeSum = partitionsLogSize.foldLeft(0.0)(_ + _).toInt
+
+      Map("consumerGroup" -> t._1, "offset" -> offsetSum.toString, "lag" -> (partitionsLogSizeSum - offsetSum).toString,
+        "partitions" -> t._2.map { p =>
+          Map("id" -> p._2, "offset" -> p._3, "lag" -> (partitionsLogSize(p._2.toInt) - p._3.toInt).toString,
+            "owner" -> {
+              owners.find(o => (o._1 == t._1) && (o._2 == p._2)) match {
+                case Some(s) => s._3
+                case None => ""
+              }
+            })
+        })
+    }.toList
+  }
+
+  private def createTopicsInfo(topics: List[Map[String, Object]], zkClient: ZkClient): Future[List[Map[String, Object]]] = {
+    Future.sequence(topics.map { e =>
+      for {
+        partitionLeaders <- getPartitionLeaders(e("name").toString, zkClient)
+        partitionsLogSize <- getPartitionsLogSize(e("name").toString, partitionLeaders)
+        partitions = partitionsLogSize.zipWithIndex.map(pls => Map("id" -> pls._2.toString, "logSize" -> pls._1.toString))
+        logSizeSum = partitionsLogSize.foldLeft(0.0)(_ + _).toInt.toString
+      } yield Map("name" -> e("name"), "partitions" -> partitions, "zookeeper" -> e("zookeeper"), "logSize" -> logSizeSum)
+
+    })
   }
 
 }
