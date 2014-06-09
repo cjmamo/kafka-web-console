@@ -26,6 +26,7 @@ class ClientNotificationManager extends Actor {
 
   val channel = Registry.lookupObject(PropertyConstants.BroadcastChannel) match {
     case Some(broadcastChannel: (_, _)) => broadcastChannel._2.asInstanceOf[Concurrent.Channel[String]]
+    case _ => sys.error("not found any broadcast channel.")
   }
 
   override def receive: Actor.Receive = {
