@@ -30,9 +30,11 @@ object Message {
 
   case class Terminate()
 
+  case class SaveOffsetPoints()
+
   object ConnectNotification {
     def apply(zk: Zookeeper, status: Status.Value): ConnectNotification = {
-      ConnectNotification(Zookeeper(zk.name, zk.host, zk.port, zk.groupId, status.id, zk.chroot))
+      ConnectNotification(Zookeeper(zk.name, zk.host, zk.port, zk.groupId, status.id, zk.chroot, zk.id))
     }
   }
 

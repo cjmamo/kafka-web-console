@@ -32,9 +32,7 @@ object Group extends Enumeration {
   import Database.groupsTable
 
   def findAll: Iterable[Group] = inTransaction {
-    from(groupsTable) {
-      group => select(group)
-    }
+    from(groupsTable)(group => select(group))
   }
 
   def findByName(name: String) = inTransaction {
@@ -45,7 +43,7 @@ object Group extends Enumeration {
 case class Group(val name: String) extends KeyedEntity[Long] {
   override val id = 0L
 
-  lazy val zookeepers: List[Zookeeper] = inTransaction {
-    Database.groupToZookeepers.left(this).toList
+  lazy val zookeepers: Seq[Zookeeper] = inTransaction {
+    Database.groupToZookeepers.left(this).toSeq
   }
 }

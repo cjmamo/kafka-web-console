@@ -17,6 +17,7 @@
 package common
 
 import common.Registry.PropertyConstants.PropertyConstants
+import java.util.concurrent.atomic.AtomicReference
 
 object Registry {
 
@@ -26,10 +27,10 @@ object Registry {
     val BroadcastChannel = Value("BROADCAST-CHANNEL")
   }
 
-  private var properties = Map[String, Any]()
+  private val properties = new AtomicReference(Map[String, Any]())
 
   def lookupObject(propertyName: String): Option[Any] = {
-    properties.get(propertyName)
+    properties.get().get(propertyName)
   }
 
   def lookupObject(propertyName: PropertyConstants): Option[Any] = {
@@ -37,7 +38,15 @@ object Registry {
   }
 
   def registerObject[A](name: String, value: A): A = {
-    properties = properties ++ Map(name -> value)
+    var dirty = true
+
+    while (dirty) {
+      val oldProperties = properties.get()
+      if (properties.compareAndSet(oldProperties, oldProperties ++ Map(name -> value))) {
+        dirty = false
+      }
+    }
+
     value
   }
 

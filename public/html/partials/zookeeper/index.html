@@ -197,14 +197,10 @@
                 <p data-ng-show="zookeeperForm.port.$invalid && !zookeeperForm.port.$pristine" class="help-block">Port
                     number is invalid.</p>
             </div>
-            <div class="form-group"
-                 data-ng-class="{ 'has-error' : zookeeperForm.port.$invalid && !zookeeperForm.port.$pristine }">
-                <label for="port">Chroot</label>
+            <div class="form-group">
+                <label for="chroot">Chroot</label>
                 <input type="text" id="chroot" name="chroot" data-ng-model="zookeeper.chroot"
                        class="form-control">
-
-                <p data-ng-show="zookeeperForm.port.$invalid && !zookeeperForm.port.$pristine" class="help-block">Chroot
-                    is invalid.</p>
             </div>
             <div class="form-group">
                 <label for="group">Group</label>

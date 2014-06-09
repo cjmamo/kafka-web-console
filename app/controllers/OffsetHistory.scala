@@ -16,16 +16,23 @@
 
 package controllers
 
-import play.api.mvc.{Controller, AnyContent, Action}
+import play.api.libs.json.Json
+import play.api.mvc._
+import models.OffsetPoint
 
-object IgnoreParamAssets extends Controller {
+object OffsetHistory extends Controller {
 
-  def at(path: String, file: String, ignoreParam: String, ignoreParam2: String): Action[AnyContent] = {
-    Assets.at(path, file)
-  }
+  def show(consumerGroup: String, topic: String, zookeeper: String) = Action {
 
-  def at2(path: String, file: String, ignoreParam: String, ignoreParam2: String,  ignoreParam3: String): Action[AnyContent] = {
-    Assets.at(path, file)
+    models.Zookeeper.findByName(zookeeper) match {
+      case Some(zk) => {
+        models.OffsetHistory.findByZookeeperIdAndTopic(zk.id, topic) match {
+          case Some(oH) => Ok(Json.toJson(OffsetPoint.findByOffsetHistoryIdAndConsumerGroup(oH.id, consumerGroup)))
+          case _ => Ok(Json.toJson(Seq[String]()))
+        }
+      }
+      case _ => Ok(Json.toJson(Seq[String]()))
+    }
   }
 
 }

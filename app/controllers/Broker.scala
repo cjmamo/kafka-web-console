@@ -22,11 +22,13 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import common.Util._
 import play.api.libs.json.{Writes, Json}
 import scala.Some
+import models.Zookeeper
+import com.twitter.zk.ZkClient
 
 object Broker extends Controller {
 
-  implicit object BrokerWrites extends Writes[List[(String, Map[String, Any])]] {
-    def writes(l: List[(String, Map[String, Any])]) = {
+  implicit object BrokerWrites extends Writes[Seq[(String, Map[String, Any])]] {
+    def writes(l: Seq[(String, Map[String, Any])]) = {
       val brokers = l.map { i =>
 
         val fields = i._2.map { kv =>
@@ -43,18 +45,15 @@ object Broker extends Controller {
   }
 
   def index = Action.async {
-
-    val brokers = connectedZookeepers { (zk, zkClient) =>
-
-      for {
-        brokerIds <- getZChildren(zkClient, "/brokers/ids/*")
-
-        brokers <- Future.sequence(brokerIds.map(brokerId => twitterToScalaFuture(brokerId.getData())))
-      } yield brokers.map(b => (zk.name, scala.util.parsing.json.JSON.parseFull(new String(b.bytes)).get.asInstanceOf[Map[String, Any]]))
-
-    }
-
+    val brokers = connectedZookeepers { (zk, zkClient) => getBrokers(zk, zkClient)}
     Future.sequence(brokers).map(l => Ok(Json.toJson(l.flatten)))
+  }
+
+  private def getBrokers(zk: Zookeeper, zkClient: ZkClient): Future[Seq[(String, Map[String, Any])]] = {
+    return for {
+      brokerIds <- getZChildren(zkClient, "/brokers/ids/*")
+      brokers <- Future.sequence(brokerIds.map(brokerId => twitterToScalaFuture(brokerId.getData())))
+    } yield brokers.map(b => (zk.name, scala.util.parsing.json.JSON.parseFull(new String(b.bytes)).get.asInstanceOf[Map[String, Any]]))
   }
 
 }

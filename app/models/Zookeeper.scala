@@ -42,22 +42,26 @@ object Zookeeper {
     }
   }
 
-  def findAll: Iterable[Zookeeper] = inTransaction {
+  def findAll: Seq[Zookeeper] = inTransaction {
     from(zookeepersTable) {
       zk => select(zk)
     }.toList
   }
 
-  def findByStatusId(statusId: Long): Iterable[Zookeeper] = inTransaction {
+  def findByStatusId(statusId: Long): Seq[Zookeeper] = inTransaction {
     from(zookeepersTable)(zk => where(zk.statusId === statusId) select (zk)).toList
   }
 
-  def findById(name: String): Option[Zookeeper] = inTransaction {
-    zookeepersTable.lookup(name)
+  def findById(id: Long): Option[Zookeeper] = inTransaction {
+    zookeepersTable.lookup(id)
+  }
+
+  def findByName(name: String): Option[Zookeeper] = inTransaction {
+    from(zookeepersTable)(zk => where(zk.name === name) select (zk)).headOption
   }
 
   def upsert(zookeeper: Zookeeper) = inTransaction {
-    val zkCount = from(zookeepersTable)(z => where(zookeeper.name === z.name) select (z)).toList.size
+    val zkCount = from(zookeepersTable)(z => where(zookeeper.id === z.id) select (z)).toSeq.size
     zkCount match {
       case 1 => this.update(zookeeper)
       case _ if zkCount < 1 => this.insert(zookeeper)
@@ -74,7 +78,7 @@ object Zookeeper {
   }
 
   def delete(zookeeper: Zookeeper) = inTransaction {
-    zookeepersTable.delete(zookeeper.name)
+    zookeepersTable.delete(zookeeper.id)
   }
 
   def update(zookeepers: Iterable[Zookeeper]) {
@@ -84,10 +88,12 @@ object Zookeeper {
   }
 }
 
-case class Zookeeper(@Column("name") id: String, host: String, port: Int, groupId: Long, statusId: Long, chroot: String)
-  extends KeyedEntity[String] {
-
-  def name = id
+case class Zookeeper(name: String, host: String, port: Int, groupId: Long, statusId: Long, chroot: String, id: Long = 0)
+  extends KeyedEntity[Long] {
 
   override def toString = "%s:%s/%s".format(host, port, chroot)
+
+  lazy val offsetHistories: Seq[OffsetHistory] = inTransaction {
+    Database.zookeeperToOffsetHistories.left(this).toList
+  }
 }

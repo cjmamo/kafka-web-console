@@ -19,7 +19,7 @@ package actors
 import common.{Message, Registry}
 import Registry.PropertyConstants
 import models.{Status, Zookeeper}
-import akka.actor.{ActorRef, Actor}
+import akka.actor.Actor
 import com.twitter.zk._
 import com.twitter.util.JavaTimer
 import com.twitter.conversions.time._
@@ -33,7 +33,7 @@ import akka.actor.Terminated
 import scala.Some
 import org.apache.zookeeper.Watcher.Event.KeeperState
 import scala.concurrent.Await
-import common.Util
+import common.Util._
 
 class ConnectionManager() extends Actor {
 
@@ -82,28 +82,28 @@ class ConnectionManager() extends Actor {
 
   private def terminate() {
     shutdownConnections()
-    Zookeeper.update(Zookeeper.findAll.map(z => Zookeeper(z.id, z.host, z.port, z.groupId, Status.Disconnected.id, z.chroot)))
+    Zookeeper.update(Zookeeper.findAll.map(z => Zookeeper(z.name, z.host, z.port, z.groupId, Status.Disconnected.id, z.chroot)))
   }
 
   private def shutdownConnections() {
     Registry.lookupObject(PropertyConstants.ZookeeperConnections) match {
       case Some(s: Map[_, _]) =>
-        s.asInstanceOf[Map[String, ZkClient]].map(z => Await.result(Util.twitterToScalaFuture(z._2.release()), Duration.Inf))
+        s.asInstanceOf[Map[String, ZkClient]].map(z => Await.result(twitterToScalaFuture(z._2.release()), Duration.Inf))
       case _ =>
     }
   }
 
   private def getZkClient(zk: Zookeeper, zkConnections: Map[String, ZkClient]): ZkClient = {
-    zkConnections.filterKeys(_ == zk.id) match {
+    zkConnections.filterKeys(_ == zk.name) match {
       case zk if zk.size > 0 => zk.head._2
       case _ =>
         val zkClient = ZkClient(zk.toString, 6000 milliseconds, 6000 milliseconds)(new JavaTimer)
-        Registry.registerObject(PropertyConstants.ZookeeperConnections, Map(zk.id -> zkClient) ++ zkConnections)
+        Registry.registerObject(PropertyConstants.ZookeeperConnections, Map(zk.name -> zkClient) ++ zkConnections)
         zkClient
     }
   }
 
-  private def lookupZookeeperConnections(): Map[String, ZkClient] = {
+  def lookupZookeeperConnections(): Map[String, ZkClient] = {
     Registry.lookupObject(PropertyConstants.ZookeeperConnections) match {
       case Some(zkConnections: Map[_, _]) => zkConnections.asInstanceOf[Map[String, ZkClient]]
       case _ => Registry.registerObject(PropertyConstants.ZookeeperConnections, Map[String, ZkClient]())
@@ -111,10 +111,10 @@ class ConnectionManager() extends Actor {
   }
 
   private def disconnect(zk: Zookeeper) {
-    lookupZookeeperConnections().get(zk.id) match {
+    lookupZookeeperConnections().get(zk.name) match {
       case Some(zkClient) =>
         zkClient.release()
-        Registry.registerObject(PropertyConstants.ZookeeperConnections, lookupZookeeperConnections().filterKeys(_ != zk.id))
+        Registry.registerObject(PropertyConstants.ZookeeperConnections, lookupZookeeperConnections().filterKeys(_ != zk.name))
         Zookeeper.delete(models.Zookeeper.findById(zk.id).get)
       case _ =>
     }

@@ -17,6 +17,7 @@
 import akka.actor.{Terminated, Props}
 import common.Registry
 import actors._
+import models.OffsetHistory
 import org.squeryl.adapters._
 import org.squeryl.internals.DatabaseAdapter
 import org.squeryl.{Session, SessionFactory}
@@ -60,6 +61,7 @@ object Global extends GlobalSettings {
     Akka.system.actorOf(Props(new Router()), "router")
     Akka.system.actorOf(Props(new ConnectionManager()))
     Akka.system.actorOf(Props(new ClientNotificationManager()))
+    Akka.system.actorOf(Props(new OffsetHistoryManager()))
   }
 
 }

@@ -34,7 +34,7 @@ case class Status(val name: String) extends KeyedEntity[Long] {
 
   override val id = 0L
 
-  lazy val zookeepers: List[Zookeeper] = inTransaction {
-    Database.statusToZookeepers.left(this).toList
+  lazy val zookeepers: Seq[Zookeeper] = inTransaction {
+    Database.statusToZookeepers.left(this).toSeq
   }
 }
