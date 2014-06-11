@@ -23,7 +23,7 @@ import common.Util._
 import play.api.libs.json._
 import play.api.libs.json.JsObject
 import play.api.libs.iteratee.{Concurrent, Iteratee}
-import common.Registry
+import common.{Message, Registry}
 import common.Registry.PropertyConstants
 import java.util
 import kafka.javaapi.consumer.EventHandler
@@ -36,8 +36,24 @@ import com.twitter.zk.{ZNode, ZkClient}
 import scala.util.Random
 import okapies.finagle.Kafka
 import kafka.api.OffsetRequest
+import kafka.utils.{ZkUtils, ZKStringSerializer}
+import play.api.data.{Forms, Form}
+import play.api.libs.concurrent.Akka
+import play.api.data.Forms._
+import play.api.libs.json.JsArray
+import scala.Some
+import kafka.message.MessageAndMetadata
+import play.api.libs.json.JsObject
 
 object Topic extends Controller {
+
+  val topicForm = Forms.tuple(
+    "name" -> Forms.text,
+    "group" -> Forms.text,
+    "zookeeper" -> Forms.text,
+    "partitions" -> Forms.number,
+    "replications" -> Forms.number
+  )
 
   object TopicsWrites extends Writes[List[Map[String, Object]]] {
     def writes(l: List[Map[String, Object]]) = {
@@ -143,6 +159,55 @@ object Topic extends Controller {
     }
 
     (in, out)
+  }
+
+  def create() = Action { implicit request =>
+    val result = Form(topicForm).bindFromRequest.fold(
+      formFailure => BadRequest,
+      formSuccess => {
+
+        val name: String = formSuccess._1
+        val group: String = formSuccess._2
+        val zookeeper: String = formSuccess._3
+        val partitions: Int = formSuccess._4
+        val replications: Int = formSuccess._5
+
+        import org.I0Itec.zkclient.ZkClient
+
+        val zk = models.Zookeeper.findById(zookeeper).get
+
+        val zkClient = new ZkClient(zk.host+":"+zk.port, 30000, 30000, ZKStringSerializer)
+        try {
+          kafka.admin.AdminUtils.createTopic(zkClient, name, partitions, replications)
+
+        } finally {
+          zkClient.close()
+        }
+
+        Ok
+      }
+
+    )
+
+    result
+  }
+
+  def delete(name: String, zookeeper: String) = Action {
+
+    import org.I0Itec.zkclient.ZkClient
+
+    val zk = models.Zookeeper.findById(zookeeper).get
+
+    val zkClient = new ZkClient(zk.host+":"+zk.port, 30000, 30000, ZKStringSerializer)
+    try {
+      //How it is deleted in the DeleteTopicCommand
+      zkClient.deleteRecursive(ZkUtils.getTopicPath(name))
+      //kafka.admin.AdminUtils.deleteTopic(zkClient, name)
+
+    } finally {
+      zkClient.close()
+    }
+    Ok
   }
 
   private def createConsumerConfig(zookeeperAddress: String, gid: String): ConsumerConfig = {

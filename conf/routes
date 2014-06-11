@@ -15,6 +15,8 @@ GET           /topics                                             controllers.As
 GET           /topics.json                                        controllers.Topic.index()
 GET           /topics.json/:name/:zookeeper                       controllers.Topic.show(name, zookeeper)
 GET           /topics.json/:name/:zookeeper/feed                  controllers.Topic.feed(name, zookeeper)
+POST          /topics.json                                        controllers.Topic.create()
+DELETE        /topics.json/:name/:zookeeper                       controllers.Topic.delete(name, zookeeper)
 GET           /topics/:name/:zookeeper                            controllers.IgnoreParamAssets.at(path="/public", file="html/partials/topic/show.html", name, zookeeper)
 
 GET           /consumergroups.json/:name/:topic/:zookeeper        controllers.ConsumerGroup.show(name, topic, zookeeper)

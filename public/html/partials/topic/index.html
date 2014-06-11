@@ -1,30 +1,93 @@
-<div class="table-responsive">
-    <table class="table table-hover">
-        <thead>
-        <th></th>
-        <th>Zookeeper</th>
-        <th>Topic</th>
-        <th>Partition</th>
-        <th>Log Size</th>
-        </thead>
-        <tbody data-ng-repeat="topic in topics">
-        <tr>
-            <td>
-                <i class="fa fa-minus-square fa-lg" data-ng-if="topic.expanded" data-ng-click="topic.expanded = false"/>
-                <i class="fa fa-plus-square fa-lg" data-ng-if="!topic.expanded" data-ng-click="topic.expanded = true"/>
-            </td>
-            <td class="topic" data-ng-click="getTopic(topic);">{{topic.zookeeper}}</td>
-            <td  class="topic" data-ng-click="getTopic(topic);">{{topic.name}}</td>
-            <td  class="topic" data-ng-click="getTopic(topic);"></td>
-            <td   class="topic" data-ng-click="getTopic(topic);">{{topic.logSize}}</td>
-        </tr>
-        <tr data-ng-if="topic.expanded" class="row-animation" data-ng-repeat="partition in topic.partitions track by $index">
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>{{$index}}</td>
-            <td>{{partition.logSize}}</td>
-        </tr>
-        </tbody>
-    </table>
+<ul class="nav nav-tabs">
+    <li class="active">
+        <a data-toggle="tab" data-target="#all-topics">All</a>
+    </li>
+    <li>
+        <a data-toggle="tab" data-target="#create-topic">Create Topic</a>
+    </li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane active" id="all-topics">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                <th></th>
+                <th>Zookeeper</th>
+                <th>Topic</th>
+                <th>Partition</th>
+                <th>Log Size</th>
+                </thead>
+                <tbody data-ng-repeat="topic in topics">
+                <tr>
+                    <td>
+                        <i class="fa fa-minus-square fa-lg" data-ng-if="topic.expanded"
+                           data-ng-click="topic.expanded = false"/>
+                        <i class="fa fa-plus-square fa-lg" data-ng-if="!topic.expanded"
+                           data-ng-click="topic.expanded = true"/>
+                    </td>
+                    <td class="topic" data-ng-click="getTopic(topic);">{{topic.zookeeper}}</td>
+                    <td class="topic" data-ng-click="getTopic(topic);">{{topic.name}}</td>
+                    <td class="topic" data-ng-click="getTopic(topic);"></td>
+                    <td class="topic" data-ng-click="getTopic(topic);">{{topic.logSize}}</td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-xs" data-ng-click="removeTopic(topic)">
+                            <i class="fa fa-times-circle-o fa-lg"></i></button>
+                    </td>
+                </tr>
+                <tr data-ng-if="topic.expanded" class="row-animation"
+                    data-ng-repeat="partition in topic.partitions track by $index">
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>{{$index}}</td>
+                    <td>{{partition.logSize}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="tab-pane" id="create-topic">
+        <form role="form" class="topic-form" name="topicForm" data-ng-submit="createTopic(ctopic)" novalidate>
+            <div class="form-group"
+                 data-ng-class="{ 'has-error' : topicForm.name.$invalid && !topicForm.name.$pristine }">
+                <label for="name">Name</label>
+                <input data-ng-required="true" type="text" id="name" name="name" data-ng-model="ctopic.name"
+                       class="form-control" data-placement="bottom" title="Unique name to identify Topic"
+                       data-toggle="tooltip" data-ng-pattern="/^[a-zA-Z0-9\-]+$/">
+
+                <p data-ng-show="topicForm.name.$invalid && !topicForm.name.$error.pattern && !topicForm.name.$pristine" class="help-block">A name
+                    for Topic is required.</p>
+                <p data-ng-show="topicForm.name.$error.pattern && !topicForm.host.$pristine" class="help-block">
+                    Topic must be in a valid format.</p>
+            </div>
+            <div class="form-group">
+                <label for="group">Zookeeper Group</label>
+                <!--
+                <select name="group" id="group" ng-change="selectGroup()" data-ng-model="ctopic.group" data-ng-options="k as v for (k, v) in groups"></select>
+                -->
+                <select name="group" id="group" ng-change="selectGroup()" data-ng-model="ctopic.group" 
+                    data-ng-options="group.name for group in groups"></select>
+            </div>
+            <div class="form-group">
+                <label for="zookeeper">Zookeeper Instance</label>
+                <select name="zookeeper" id="zookeeper" data-ng-model="ctopic.zookeeper" data-ng-options="zookeeper.name for zookeeper in zookeepers"></select>
+            </div>
+            <div class="form-group">
+                <label for="partitions"># of partitions</label>
+                <input data-ng-required="true" type="text" id="partitions" name="partitions" data-ng-model="ctopic.partitions"
+                       class="form-control" data-placement="bottom" title="Number of partitions" value="1"
+                       data-toggle="tooltip">
+            </div>
+            <div class="form-group">
+                <label for="replication"># replications</label>
+                <input data-ng-required="true" type="text" id="replication" name="replications" data-ng-model="ctopic.replications"
+                       class="form-control" data-placement="bottom" title="Number of replications" value="1"
+                       data-toggle="tooltip">
+            </div>
+            <p class="text-center">
+                <button class="btn btn-large btn-primary" data-ng-disabled="topicForm.$invalid">Create</button>
+            </p>
+        </form>
+    </div>
 </div>
