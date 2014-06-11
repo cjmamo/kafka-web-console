@@ -41,13 +41,13 @@ app.controller("TopicsController", function ($scope, $location, $http, $filter) 
     $scope.createTopic = function (ctopic) {
         console.log(ctopic)
         $http.post('/topics.json', { name: ctopic.name, group: ctopic.group.name, zookeeper: ctopic.zookeeper.name, partitions: ctopic.partitions, replications: ctopic.replications}).success(function () {
-            $location.path("/");
+            location.reload();
         });
     };
 
     $scope.removeTopic = function (topic) {
         $http.delete('/topics.json/' + topic.name + '/'+topic.zookeeper).success(function () {
-            $location.path("/");
+            location.reload();
         });
     };
 });

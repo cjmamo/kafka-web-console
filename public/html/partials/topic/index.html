@@ -63,15 +63,13 @@
             </div>
             <div class="form-group">
                 <label for="group">Zookeeper Group</label>
-                <!--
-                <select name="group" id="group" ng-change="selectGroup()" data-ng-model="ctopic.group" data-ng-options="k as v for (k, v) in groups"></select>
-                -->
-                <select name="group" id="group" ng-change="selectGroup()" data-ng-model="ctopic.group" 
+                <select name="group" id="group" ng-change="selectGroup()" data-ng-model="ctopic.group"
                     data-ng-options="group.name for group in groups"></select>
             </div>
             <div class="form-group">
                 <label for="zookeeper">Zookeeper Instance</label>
-                <select name="zookeeper" id="zookeeper" data-ng-model="ctopic.zookeeper" data-ng-options="zookeeper.name for zookeeper in zookeepers"></select>
+                <select name="zookeeper" id="zookeeper" data-ng-model="ctopic.zookeeper"
+                        data-ng-options="zookeeper.name for zookeeper in zookeepers|filter: {status:'CONNECTED'}"></select>
             </div>
             <div class="form-group">
                 <label for="partitions"># of partitions</label>
@@ -80,7 +78,7 @@
                        data-toggle="tooltip">
             </div>
             <div class="form-group">
-                <label for="replication"># replications</label>
+                <label for="replication">Replication factor</label>
                 <input data-ng-required="true" type="text" id="replication" name="replications" data-ng-model="ctopic.replications"
                        class="form-control" data-placement="bottom" title="Number of replications" value="1"
                        data-toggle="tooltip">
