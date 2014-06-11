@@ -156,15 +156,15 @@ object Topic extends Controller {
     return new ConsumerConfig(props)
   }
 
-  private def getPartitionOwners(topicName: String, zkClient: ZkClient): Future[Seq[(String, String, String)]] = {
+  private def getPartitionOwners(topicName: String, zkClient: ZkClient): Future[Seq[(String, Int, String)]] = {
     return for {
       owners <- getZChildren(zkClient, "/consumers/*/owners/" + topicName + "/" + "*")
-      ownerIds <- Future.sequence(owners.map(z => twitterToScalaFuture(z.getData().map(d => (z.path.split("/")(2), z.path.split("/")(5), new String(d.bytes))))))
+      ownerIds <- Future.sequence(owners.map(z => twitterToScalaFuture(z.getData().map(d => (z.path.split("/")(2), z.path.split("/")(5).toInt, new String(d.bytes))))))
     } yield ownerIds
   }
 
   private def createTopicInfo(consumersAndPartitionOffsets: Map[String, Seq[Long]], partitionsLogSize: Seq[Long],
-                              owners: Seq[(String, String, String)]): Seq[Map[String, Object]] = {
+                              owners: Seq[(String, Int, String)]): Seq[Map[String, Object]] = {
 
     consumersAndPartitionOffsets.map { cPO =>
       val offsetSum = cPO._2.map(_.toInt).foldLeft(0)(_ + _)
@@ -191,12 +191,12 @@ object Topic extends Controller {
 
   private def createPartitionInfo(consumerGroupAndPartitionOffsets: (String, Seq[Long]),
                                   partitionsLogSize: Seq[Long],
-                                  owners: Seq[(String, String, String)]): Seq[Map[String, String]] = {
+                                  owners: Seq[(String, Int, String)]): Seq[Map[String, String]] = {
 
     consumerGroupAndPartitionOffsets._2.zipWithIndex.map { case (pO, i) =>
       Map("id" -> i.toString, "offset" -> pO.toString, "lag" -> (partitionsLogSize(i) - pO).toString,
         "owner" -> {
-          owners.find(o => (o._1 == consumerGroupAndPartitionOffsets._1) && (o._2 == pO)) match {
+          owners.find(o => (o._1 == consumerGroupAndPartitionOffsets._1) && (o._2 == i)) match {
             case Some(s) => s._3
             case None => ""
           }
