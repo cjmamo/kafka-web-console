@@ -6,6 +6,7 @@
         <th>Topic</th>
         <th>Partition</th>
         <th>Log Size</th>
+        <th>Leader</th>
         </thead>
         <tbody data-ng-repeat="topic in topics">
         <tr>
@@ -24,6 +25,7 @@
             <td></td>
             <td>{{$index}}</td>
             <td>{{partition.logSize}}</td>
+            <td>{{partition.leader}}</td>
         </tr>
         </tbody>
     </table>
