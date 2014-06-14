@@ -66,9 +66,8 @@ object Zookeeper extends Controller {
         val zk = models.Zookeeper.insert(models.Zookeeper(name, host, port, models.Group.findByName(group.toUpperCase).get.id, models.Status.Disconnected.id, chroot))
 
         Akka.system.actorSelection("akka://application/user/router") ! Message.Connect(zk)
-        Ok
+        Created
       }
-
     )
 
     result
@@ -78,7 +77,7 @@ object Zookeeper extends Controller {
     val zk = models.Zookeeper.findByName(name).get
     models.Zookeeper.update(models.Zookeeper(zk.name, zk.host, zk.port, zk.groupId, models.Status.Deleted.id, zk.chroot, zk.id))
     Akka.system.actorSelection("akka://application/user/router") ! Message.Disconnect(zk)
-    Ok
+    NoContent
   }
 
   def feed() = WebSocket.using[String] { implicit request =>

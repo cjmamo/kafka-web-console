@@ -30,7 +30,7 @@ object Status extends Enumeration {
 
 }
 
-case class Status(val name: String) extends KeyedEntity[Long] {
+case class Status(name: String) extends KeyedEntity[Long] {
 
   override val id = 0L
 

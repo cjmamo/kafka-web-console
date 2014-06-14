@@ -6,7 +6,7 @@
 <div class="tab-content">
     <div class="tab-pane active" id="consumer-groups">
         <div class="table-responsive">
-            <table class="table">
+            <table class="table table-hover">
                 <thead>
                 <th></th>
                 <th>Consumer Group</th>
@@ -21,11 +21,11 @@
                         <i class="fa fa-minus-square fa-lg" data-ng-if="consumerGroup.expanded" data-ng-click="consumerGroup.expanded = false"/>
                         <i class="fa fa-plus-square fa-lg" data-ng-if="!consumerGroup.expanded" data-ng-click="consumerGroup.expanded = true"/>
                     </td>
-                    <td>{{consumerGroup.consumerGroup}}</td>
-                    <td></td>
-                    <td><a data-ng-click="getOffsetHistory(consumerGroup);">{{consumerGroup.offset}}</a></td>
-                    <td>{{consumerGroup.lag}}</td>
-                    <td></td>
+                    <td class="clickable" data-ng-click="getOffsetHistory(consumerGroup);">{{consumerGroup.consumerGroup}}</td>
+                    <td class="clickable" data-ng-click="getOffsetHistory(consumerGroup);"></td>
+                    <td class="clickable" data-ng-click="getOffsetHistory(consumerGroup);">{{consumerGroup.offset}}</td>
+                    <td class="clickable" data-ng-click="getOffsetHistory(consumerGroup);">{{consumerGroup.lag}}</td>
+                    <td class="clickable" data-ng-click="getOffsetHistory(consumerGroup);"></td>
                 </tr>
                 <tr data-ng-if="consumerGroup.expanded" class="row-animation"
                     data-ng-repeat="partition in consumerGroup.partitions track by $index">

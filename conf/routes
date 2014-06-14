@@ -8,7 +8,7 @@ GET           /                                                           contro
 GET           /zookeepers                                                 controllers.Assets.at(path="/public", file="html/partials/zookeeper/index.html")
 GET           /zookeepers.json/feed                                       controllers.Zookeeper.feed()
 GET           /zookeepers.json/:group                                     controllers.Zookeeper.index(group)
-POST          /zookeepers.json                                            controllers.Zookeeper.create()
+PUT           /zookeepers.json                                            controllers.Zookeeper.create()
 DELETE        /zookeepers.json/:name                                      controllers.Zookeeper.delete(name)
 
 GET           /topics                                                     controllers.Assets.at(path="/public", file="html/partials/topic/index.html")
@@ -26,6 +26,10 @@ GET           /brokers.json                                               contro
 
 GET           /offsethistory/:consumerGroup/:topic/:zookeeper             controllers.IgnoreParamAssets.at2(path="/public", file="html/partials/offset-history/show.html", consumerGroup, topic, zookeeper)
 GET           /offsethistory.json/:consumerGroup/:topic/:zookeeper        controllers.OffsetHistory.show(consumerGroup, topic, zookeeper)
+
+GET           /settings                                                   controllers.Assets.at(path="/public", file="html/partials/settings/index.html")
+GET           /settings.json                                              controllers.Settings.index()
+POST          /settings.json                                              controllers.Settings.update()
 
 # Map static resources from the /public folder to the /assets URL path
 GET           /assets/*file                                               controllers.Assets.at(path="/public", file)

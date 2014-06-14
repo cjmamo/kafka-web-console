@@ -13,14 +13,14 @@ ALTER TABLE zookeepers ADD UNIQUE (name);
 CREATE TABLE offsetHistory (
   id LONG AUTO_INCREMENT PRIMARY KEY,
   zookeeperId LONG,
-  topic VARCHAR,
+  topic VARCHAR(255),
   FOREIGN KEY (zookeeperId) REFERENCES zookeepers(id),
   UNIQUE (zookeeperId, topic)
 );
 
 CREATE TABLE offsetPoints (
   id LONG AUTO_INCREMENT PRIMARY KEY,
-  consumerGroup VARCHAR,
+  consumerGroup VARCHAR(255),
   timestamp TIMESTAMP,
   offsetHistoryId LONG,
   partition INT,
@@ -29,10 +29,19 @@ CREATE TABLE offsetPoints (
   FOREIGN KEY (offsetHistoryId) REFERENCES offsetHistory(id)
 );
 
+CREATE TABLE settings (
+  key VARCHAR(255) PRIMARY KEY,
+  value VARCHAR(255)
+);
+
+INSERT INTO settings (key, value) VALUES ('PURGE_SCHEDULE', '0 0 0 ? * SUN *');
+INSERT INTO settings (key, value) VALUES ('OFFSET_FETCH_INTERVAL', '10');
+
 # --- !Downs
 
 DROP TABLE IF EXISTS offsetPoints;
 DROP TABLE IF EXISTS offsetHistory;
+DROP TABLE IF EXISTS settings;
 
 ALTER TABLE zookeepers DROP PRIMARY KEY;
 ALTER TABLE zookeepers DROP COLUMN id;

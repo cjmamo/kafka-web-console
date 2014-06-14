@@ -74,7 +74,7 @@ app.controller("ZookeepersController", function ($scope, $http, $location) {
     };
 
     $scope.createZookeeper = function (zookeeper) {
-        $http.post('/zookeepers.json', { name: zookeeper.name, host: zookeeper.host, port: zookeeper.port, group: zookeeper.group.name, chroot: zookeeper.chroot}).success(function () {
+        $http.put('/zookeepers.json', { name: zookeeper.name, host: zookeeper.host, port: zookeeper.port, group: zookeeper.group.name, chroot: zookeeper.chroot}).success(function () {
             $location.path("/");
         });
     };

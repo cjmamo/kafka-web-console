@@ -17,14 +17,14 @@
 import akka.actor.{Terminated, Props}
 import common.Registry
 import actors._
-import models.OffsetHistory
+import models.{Setting, OffsetHistory}
 import org.squeryl.adapters._
 import org.squeryl.internals.DatabaseAdapter
 import org.squeryl.{Session, SessionFactory}
 import play.api.db.DB
 import play.api.libs.concurrent.Akka
 import play.api.libs.iteratee.Concurrent
-import play.api.{Application, GlobalSettings}
+import play.api.{Logger, Application, GlobalSettings}
 import Registry.PropertyConstants
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.Play.current
@@ -62,6 +62,7 @@ object Global extends GlobalSettings {
     Akka.system.actorOf(Props(new ConnectionManager()))
     Akka.system.actorOf(Props(new ClientNotificationManager()))
     Akka.system.actorOf(Props(new OffsetHistoryManager()))
+    Akka.system.actorOf(Props(new Purger()))
   }
 
 }

@@ -17,6 +17,10 @@
 var app = angular.module('app', ['ngRoute', 'ngAnimate'])
     .config(function ($routeProvider) {
         $routeProvider
+            .when('/settings', {
+                controller: 'SettingsController',
+                templateUrl: '/settings'
+            })
             .when('/zookeepers', {
                 controller: 'ZookeepersController',
                 templateUrl: '/zookeepers'

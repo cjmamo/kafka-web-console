@@ -30,7 +30,11 @@ object Message {
 
   case class Terminate()
 
-  case class SaveOffsetPoints()
+  case class FetchOffsetPoints()
+
+  case class SettingsUpdateNotification()
+
+  case class Purge()
 
   object ConnectNotification {
     def apply(zk: Zookeeper, status: Status.Value): ConnectNotification = {

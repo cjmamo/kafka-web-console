@@ -1,0 +1,29 @@
+<form role="form" name="settingsForm" data-ng-submit="updateSettings(settings)" novalidate>
+    <div class="form-group"
+         data-ng-class="{ 'has-error' : settingsForm.purgeSchedule.$invalid && !settingsForm.purgeSchedule.$pristine }">
+        <label for="purgeSchedule">Purge Schedule</label>
+        <input data-ng-required="true" type="text" id="purgeSchedule" name="purgeSchedule"
+               data-ng-model="settings.purgeSchedule"
+               class="form-control" data-placement="bottom"
+               title="A Cron expression to schedule purge of offset histories"
+               data-toggle="tooltip">
+
+        <p data-ng-show="settingsForm.purgeSchedule.$invalid && !settingsForm.purgeSchedule.$pristine"
+           class="help-block">A Cron
+            expression is required.</p>
+    </div>
+    <div class="form-group"
+         data-ng-class="{ 'has-error' : settingsForm.offsetFetchInterval.$invalid && !settingsForm.offsetFetchInterval.$pristine }">
+        <label for="offsetFetchInterval">Offset Fetch Interval</label>
+        <input type="number" id="offsetFetchInterval" name="offsetFetchInterval"
+               data-ng-model="settings.offsetFetchInterval" title="The duration in seconds between each offset request"
+               data-ng-required="true" class="form-control" min="1">
+
+        <p data-ng-show="settingsForm.offsetFetchInterval.$invalid && !settingsForm.offsetFetchInterval.$pristine"
+           class="help-block">Offset fetch
+            interval is invalid.</p>
+    </div>
+    <p class="text-center">
+        <button class="btn btn-large btn-primary" data-ng-disabled="settingsForm.$invalid">Apply</button>
+    </p>
+</form>

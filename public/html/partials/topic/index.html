@@ -13,10 +13,10 @@
                 <i class="fa fa-minus-square fa-lg" data-ng-if="topic.expanded" data-ng-click="topic.expanded = false"/>
                 <i class="fa fa-plus-square fa-lg" data-ng-if="!topic.expanded" data-ng-click="topic.expanded = true"/>
             </td>
-            <td class="topic" data-ng-click="getTopic(topic);">{{topic.zookeeper}}</td>
-            <td  class="topic" data-ng-click="getTopic(topic);">{{topic.name}}</td>
-            <td  class="topic" data-ng-click="getTopic(topic);"></td>
-            <td   class="topic" data-ng-click="getTopic(topic);">{{topic.logSize}}</td>
+            <td class="clickable" data-ng-click="getTopic(topic);">{{topic.zookeeper}}</td>
+            <td class="clickable" data-ng-click="getTopic(topic);">{{topic.name}}</td>
+            <td class="clickable" data-ng-click="getTopic(topic);"></td>
+            <td class="clickable" data-ng-click="getTopic(topic);">{{topic.logSize}}</td>
         </tr>
         <tr data-ng-if="topic.expanded" class="row-animation" data-ng-repeat="partition in topic.partitions track by $index">
             <td></td>

@@ -25,6 +25,7 @@ object Database extends Schema {
   val statusTable = table[Status]("status")
   val offsetPointsTable = table[OffsetPoint]("offsetPoints")
   val offsetHistoryTable = table[OffsetHistory]("offsetHistory")
+  val settingsTable = table[Setting]("settings")
 
   val groupToZookeepers = oneToManyRelation(groupsTable, zookeepersTable).via((group, zk) => group.id === zk.groupId)
   val statusToZookeepers = oneToManyRelation(statusTable, zookeepersTable).via((status, zk) => status.id === zk.statusId)
@@ -34,7 +35,7 @@ object Database extends Schema {
   on(this.zookeepersTable) {
     zookeeper =>
       declare(
-        zookeeper.id is (autoIncremented),
+        zookeeper.id is (primaryKey, autoIncremented),
         zookeeper.name is (unique)
       )
   }
@@ -42,7 +43,7 @@ object Database extends Schema {
   on(this.groupsTable) {
     group =>
       declare(
-        group.id is (autoIncremented),
+        group.id is (primaryKey, autoIncremented),
         group.name is (unique)
       )
   }
@@ -50,7 +51,7 @@ object Database extends Schema {
   on(this.statusTable) {
     status =>
       declare(
-        status.id is (autoIncremented),
+        status.id is (primaryKey, autoIncremented),
         status.name is (unique)
       )
   }
@@ -58,15 +59,20 @@ object Database extends Schema {
   on(this.offsetPointsTable) {
     offsetPoint =>
       declare(
-        offsetPoint.id is (autoIncremented)
+        offsetPoint.id is (primaryKey, autoIncremented)
       )
   }
 
   on(this.offsetHistoryTable) {
     offsetHistory =>
       declare(
-        offsetHistory.id is (autoIncremented)
+        offsetHistory.id is (primaryKey, autoIncremented)
       )
+  }
+
+  on(this.settingsTable) {
+    setting =>
+      declare(setting.key is (primaryKey))
   }
 
 }

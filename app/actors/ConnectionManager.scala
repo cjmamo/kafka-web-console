@@ -37,7 +37,7 @@ import common.Util._
 
 class ConnectionManager() extends Actor {
 
-  val router = Akka.system.actorSelection("akka://application/user/router")
+  private val router = Akka.system.actorSelection("akka://application/user/router")
 
   override def preStart() {
     for (zookeeper <- models.Zookeeper.findAll) {

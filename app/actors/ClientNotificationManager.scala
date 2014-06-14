@@ -21,15 +21,17 @@ import common.{Message, Registry}
 import Registry.PropertyConstants
 import play.api.libs.iteratee.{Concurrent, Enumerator}
 import play.api.libs.json.Json
+import play.api.Logger
 
 class ClientNotificationManager extends Actor {
 
-  val channel = Registry.lookupObject(PropertyConstants.BroadcastChannel) match {
+  private val channel = Registry.lookupObject(PropertyConstants.BroadcastChannel) match {
     case Some(broadcastChannel: (_, _)) => broadcastChannel._2.asInstanceOf[Concurrent.Channel[String]]
-    case _ => sys.error("not found any broadcast channel.")
+    case _ => sys.error("No broadcast channel found.")
   }
 
   override def receive: Actor.Receive = {
     case connectNotification: Message.ConnectNotification => channel.push(Json.toJson(connectNotification.zookeeper).toString())
+    case _ =>
   }
 }

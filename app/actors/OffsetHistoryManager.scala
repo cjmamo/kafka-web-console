@@ -16,9 +16,9 @@
 
 package actors
 
-import akka.actor.Actor
+import akka.actor.{Cancellable, Actor}
 import akka.actor.Actor.Receive
-import models.{Zookeeper, OffsetPoint, OffsetHistory, Status}
+import models._
 import common.Util._
 import scala.Some
 import common.{Message, Registry}
@@ -33,16 +33,19 @@ import play.api.Logger
 import java.sql.Timestamp
 import java.util.Date
 import org.apache.zookeeper.ZooKeeper
+import scala.Some
 
 
 class OffsetHistoryManager extends Actor {
 
+  private var fetchOffsetPointsTask: Cancellable = null
+
   override def preStart() {
-    self ! Message.SaveOffsetPoints
+    self ! Message.FetchOffsetPoints
   }
 
   override def receive: Receive = {
-    case Message.SaveOffsetPoints => {
+    case Message.FetchOffsetPoints => {
       connectedZookeepers { (zk, zkClient) =>
 
         for {
@@ -57,7 +60,11 @@ class OffsetHistoryManager extends Actor {
         } yield None
       }
 
-      Akka.system.scheduler.scheduleOnce(Duration.create(60, TimeUnit.SECONDS), self, Message.SaveOffsetPoints)
+      fetchOffsetPointsTask = Akka.system.scheduler.scheduleOnce(Duration.create(Setting.findByKey(Setting.OffsetFetchInterval.toString).get.value.toLong, TimeUnit.SECONDS), self, Message.FetchOffsetPoints)
+    }
+    case Message.SettingsUpdateNotification => {
+      fetchOffsetPointsTask.cancel()
+      Akka.system.scheduler.scheduleOnce(Duration.create(Setting.findByKey(Setting.OffsetFetchInterval.toString).get.value.toLong, TimeUnit.SECONDS), self, Message.FetchOffsetPoints)
     }
     case _ =>
   }

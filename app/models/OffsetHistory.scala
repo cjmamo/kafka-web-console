@@ -14,17 +14,20 @@
  * the License.
  */
 
-
 package models
 
 import org.squeryl.annotations._
-import org.squeryl.KeyedEntity
+import org.squeryl.{Session, KeyedEntity}
 import org.squeryl.PrimitiveTypeMode._
 import models.Database._
 
 object OffsetHistory {
 
   import Database.offsetHistoryTable
+
+  def truncate() = inTransaction {
+    offsetHistoryTable.deleteWhere(r => 1 === 1)
+  }
 
   def findByZookeeperIdAndTopic(zookeeperId: Long, topic: String): Option[OffsetHistory] = inTransaction {
     from(offsetHistoryTable)(oH => where(oH.zookeeperId === zookeeperId and oH.topic === topic) select (oH)).headOption

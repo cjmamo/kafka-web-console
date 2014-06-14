@@ -17,7 +17,7 @@
 package models
 
 import org.squeryl.annotations._
-import org.squeryl.KeyedEntity
+import org.squeryl.{Session, KeyedEntity}
 import org.squeryl.PrimitiveTypeMode._
 import models.Database._
 import org.squeryl.dsl.CompositeKey2
@@ -39,6 +39,10 @@ object OffsetPoint {
         "logSize" -> offsetPoint.logSize
       )
     }
+  }
+
+  def truncate() = inTransaction {
+    Session.currentSession.connection.createStatement().executeUpdate("TRUNCATE TABLE offsetPoints;")
   }
 
   def findByOffsetHistoryIdAndConsumerGroup(offsetHistoryId: Long, consumerGroup: String): Seq[OffsetPoint] = inTransaction {
