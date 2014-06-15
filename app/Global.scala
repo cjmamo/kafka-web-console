@@ -62,7 +62,6 @@ object Global extends GlobalSettings {
     Akka.system.actorOf(Props(new ConnectionManager()))
     Akka.system.actorOf(Props(new ClientNotificationManager()))
     Akka.system.actorOf(Props(new OffsetHistoryManager()))
-    Akka.system.actorOf(Props(new Purger()))
   }
 
 }

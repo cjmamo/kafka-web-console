@@ -16,55 +16,64 @@
 
 package actors
 
-import akka.actor.{Cancellable, Actor}
-import akka.actor.Actor.Receive
+import akka.actor.{ActorRef, Cancellable, Actor}
 import models._
 import common.Util._
-import scala.Some
-import common.{Message, Registry}
-import common.Registry.PropertyConstants
-import com.twitter.zk.ZkClient
+import common.Message
 import play.api.libs.concurrent.Akka
 import scala.concurrent.duration.Duration
 import java.util.concurrent.TimeUnit
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.Play.current
-import play.api.Logger
 import java.sql.Timestamp
-import java.util.Date
-import org.apache.zookeeper.ZooKeeper
+import java.util.{Properties, Date}
 import scala.Some
+import org.quartz._
+import org.quartz.impl.StdSchedulerFactory
 
+private class Executor() extends Job {
+  def execute(ctx: JobExecutionContext) {
+    val actor = ctx.getJobDetail.getJobDataMap().get("actor").asInstanceOf[ActorRef]
+    actor ! Message.Purge
+  }
+}
 
 class OffsetHistoryManager extends Actor {
 
   private var fetchOffsetPointsTask: Cancellable = null
+  private val JobKey = "purge"
+  private[this] val props = new Properties()
+
+  props.setProperty("org.quartz.scheduler.instanceName", context.self.path.name)
+  props.setProperty("org.quartz.threadPool.threadCount", "1")
+  props.setProperty("org.quartz.jobStore.class", "org.quartz.simpl.RAMJobStore")
+  props.setProperty("org.quartz.scheduler.skipUpdateCheck", "true")
+  val scheduler = new StdSchedulerFactory(props).getScheduler
 
   override def preStart() {
+    scheduler.start()
+    schedule()
     self ! Message.FetchOffsetPoints
+  }
+
+  override def postStop() {
+    scheduler.shutdown()
   }
 
   override def receive: Receive = {
     case Message.FetchOffsetPoints => {
-      connectedZookeepers { (zk, zkClient) =>
-
-        for {
-          topics <- getTopics(zkClient)
-          topic = topics.map { t =>
-            for {
-              partitionLeaders <- getPartitionLeaders(t._1, zkClient)
-              partitionsLogSize <- getPartitionsLogSize(t._1, partitionLeaders)
-              partitionOffsets <- getPartitionOffsets(t._1, zkClient)
-            } yield saveOffsetPoint(partitionOffsets, getOffsetHistory(zk, t), partitionsLogSize)
-          }
-        } yield None
-      }
-
+      fetchOffsetPoints()
       fetchOffsetPointsTask = Akka.system.scheduler.scheduleOnce(Duration.create(Setting.findByKey(Setting.OffsetFetchInterval.toString).get.value.toLong, TimeUnit.SECONDS), self, Message.FetchOffsetPoints)
     }
     case Message.SettingsUpdateNotification => {
+      scheduler.deleteJob(new JobKey(JobKey))
+      schedule()
       fetchOffsetPointsTask.cancel()
       Akka.system.scheduler.scheduleOnce(Duration.create(Setting.findByKey(Setting.OffsetFetchInterval.toString).get.value.toLong, TimeUnit.SECONDS), self, Message.FetchOffsetPoints)
+    }
+    case Message.Purge => {
+      OffsetPoint.truncate()
+      OffsetHistory.truncate()
     }
     case _ =>
   }
@@ -76,13 +85,35 @@ class OffsetHistoryManager extends Actor {
     }
   }
 
-  private def saveOffsetPoint(partitionOffsets: Map[String, Seq[Long]], offsetHistory: OffsetHistory, partitionsLogSize: Seq[Long]) {
+  private def persistOffsetPoint(partitionOffsets: Map[String, Seq[Long]], offsetHistory: OffsetHistory, partitionsLogSize: Seq[Long]) {
     val timestamp = new Timestamp(new Date().getTime)
     for (e <- partitionOffsets) {
       for ((p, i) <- e._2.zipWithIndex) {
         OffsetPoint.insert(OffsetPoint(e._1, timestamp, offsetHistory.id, i, p, partitionsLogSize(i)))
       }
 
+    }
+  }
+
+  private def schedule() {
+    val jdm = new JobDataMap()
+    jdm.put("actor", self)
+    val job = JobBuilder.newJob(classOf[Executor]).withIdentity(JobKey).usingJobData(jdm).build()
+    scheduler.scheduleJob(job, TriggerBuilder.newTrigger().startNow().forJob(job).withSchedule(CronScheduleBuilder.cronSchedule(Setting.findByKey("PURGE_SCHEDULE").get.value)).build())
+  }
+
+  private def fetchOffsetPoints() {
+    connectedZookeepers { (zk, zkClient) =>
+      for {
+        topics <- getTopics(zkClient)
+        topic = topics.map { t =>
+          for {
+            partitionLeaders <- getPartitionLeaders(t._1, zkClient)
+            partitionsLogSize <- getPartitionsLogSize(t._1, partitionLeaders)
+            partitionOffsets <- getPartitionOffsets(t._1, zkClient)
+          } yield persistOffsetPoint(partitionOffsets, getOffsetHistory(zk, t), partitionsLogSize)
+        }
+      } yield None
     }
   }
 }
