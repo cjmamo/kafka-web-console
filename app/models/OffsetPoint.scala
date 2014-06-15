@@ -26,8 +26,6 @@ import play.api.libs.json.{Json, Writes}
 
 object OffsetPoint {
 
-  import Database.offsetPointsTable
-
   implicit object OffsetPointWrites extends Writes[OffsetPoint] {
     def writes(offsetPoint: OffsetPoint) = {
 
@@ -47,6 +45,14 @@ object OffsetPoint {
 
   def findByOffsetHistoryIdAndConsumerGroup(offsetHistoryId: Long, consumerGroup: String): Seq[OffsetPoint] = inTransaction {
     from(offsetPointsTable)(oP => where(oP.offsetHistoryId === offsetHistoryId and oP.consumerGroup === consumerGroup) select (oP)).toList
+  }
+
+  def deleteByOffsetHistoryId(offsetHistoryId: Long) = inTransaction {
+    offsetPointsTable.deleteWhere(oP => oP.offsetHistoryId === offsetHistoryId)
+  }
+
+  def delete(offsetPoint: OffsetPoint) = inTransaction {
+    offsetPointsTable.update(offsetPoint)
   }
 
   def update(offsetPoint: OffsetPoint) = inTransaction {

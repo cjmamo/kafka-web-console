@@ -23,14 +23,20 @@ import models.Database._
 
 object OffsetHistory {
 
-  import Database.offsetHistoryTable
-
   def truncate() = inTransaction {
     offsetHistoryTable.deleteWhere(r => 1 === 1)
   }
 
+  def delete(offsetHistory: OffsetHistory) = inTransaction {
+    offsetHistoryTable.deleteWhere(oH => oH.id === offsetHistory.id)
+  }
+
   def findByZookeeperIdAndTopic(zookeeperId: Long, topic: String): Option[OffsetHistory] = inTransaction {
     from(offsetHistoryTable)(oH => where(oH.zookeeperId === zookeeperId and oH.topic === topic) select (oH)).headOption
+  }
+
+  def findByZookeeperId(zookeeperId: Long): Seq[OffsetHistory] = inTransaction {
+    from(offsetHistoryTable)(oH => where(oH.zookeeperId === zookeeperId) select (oH)).toList
   }
 
   def insert(offsetHistory: OffsetHistory): OffsetHistory = inTransaction {

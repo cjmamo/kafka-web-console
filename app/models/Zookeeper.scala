@@ -26,8 +26,6 @@ import org.squeryl.annotations.Column
 
 object Zookeeper {
 
-  import Database.zookeepersTable
-
   implicit object ZookeeperWrites extends Writes[Zookeeper] {
     def writes(zookeeper: Zookeeper) = {
 
@@ -78,6 +76,11 @@ object Zookeeper {
   }
 
   def delete(zookeeper: Zookeeper) = inTransaction {
+    for (offsetHistory <-  OffsetHistory.findByZookeeperId(zookeeper.id)) {
+      OffsetPoint.deleteByOffsetHistoryId(offsetHistory.id)
+      OffsetHistory.delete(offsetHistory)
+    }
+
     zookeepersTable.delete(zookeeper.id)
   }
 
