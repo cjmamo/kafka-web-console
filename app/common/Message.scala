@@ -30,7 +30,7 @@ object Message {
 
   case class Terminate()
 
-  case class FetchOffsetPoints()
+  case class FetchOffsets()
 
   case class SettingsUpdateNotification()
 

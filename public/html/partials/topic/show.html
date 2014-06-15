@@ -8,33 +8,41 @@
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
-                <th></th>
-                <th>Consumer Group</th>
-                <th>Partition</th>
-                <th>Offset</th>
-                <th>Lag</th>
-                <th>Owner</th>
+                    <th class="text-center"></th>
+                    <th class="text-center">Consumer Group</th>
+                    <th class="text-center">Partition</th>
+                    <th class="text-center">Offset</th>
+                    <th class="text-center">Lag</th>
+                    <th class="text-center">Owner</th>
                 </thead>
                 <tbody data-ng-repeat="consumerGroup in topic">
                 <tr>
                     <td>
-                        <i class="fa fa-minus-square fa-lg" data-ng-if="consumerGroup.expanded" data-ng-click="consumerGroup.expanded = false"/>
-                        <i class="fa fa-plus-square fa-lg" data-ng-if="!consumerGroup.expanded" data-ng-click="consumerGroup.expanded = true"/>
+                        <i class="fa fa-minus-square fa-lg" data-ng-if="consumerGroup.expanded"
+                           data-ng-click="consumerGroup.expanded = false"/>
+                        <i class="fa fa-plus-square fa-lg" data-ng-if="!consumerGroup.expanded"
+                           data-ng-click="consumerGroup.expanded = true"/>
                     </td>
-                    <td class="clickable" data-ng-click="getOffsetHistory(consumerGroup);">{{consumerGroup.consumerGroup}}</td>
-                    <td class="clickable" data-ng-click="getOffsetHistory(consumerGroup);"></td>
-                    <td class="clickable" data-ng-click="getOffsetHistory(consumerGroup);">{{consumerGroup.offset}}</td>
-                    <td class="clickable" data-ng-click="getOffsetHistory(consumerGroup);">{{consumerGroup.lag}}</td>
-                    <td class="clickable" data-ng-click="getOffsetHistory(consumerGroup);"></td>
+                    <td class="clickable text-center" data-ng-click="getOffsetHistory(consumerGroup);">
+                        {{consumerGroup.consumerGroup}}
+                    </td>
+                    <td class="clickable text-center" data-ng-click="getOffsetHistory(consumerGroup);">-</td>
+                    <td class="clickable text-center" data-ng-click="getOffsetHistory(consumerGroup);">
+                        {{consumerGroup.offset}}
+                    </td>
+                    <td class="clickable text-center" data-ng-click="getOffsetHistory(consumerGroup);">
+                        {{consumerGroup.lag}}
+                    </td>
+                    <td class="clickable text-center" data-ng-click="getOffsetHistory(consumerGroup);">-</td>
                 </tr>
                 <tr data-ng-if="consumerGroup.expanded" class="row-animation"
                     data-ng-repeat="partition in consumerGroup.partitions track by $index">
-                    <td></td>
-                    <td></td>
-                    <td>{{$index}}</td>
-                    <td>{{partition.offset}}</td>
-                    <td>{{partition.lag}}</td>
-                    <td>{{partition.owner}}</td>
+                    <td class="text-center"></td>
+                    <td class="text-center"></td>
+                    <td class="text-center">{{$index}}</td>
+                    <td class="text-center">{{partition.offset}}</td>
+                    <td class="text-center">{{partition.lag}}</td>
+                    <td class="text-center">{{partition.owner}}</td>
                 </tr>
                 </tbody>
             </table>

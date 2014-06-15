@@ -5,7 +5,7 @@
         <input data-ng-required="true" type="text" id="purgeSchedule" name="purgeSchedule"
                data-ng-model="settings.purgeSchedule"
                class="form-control" data-placement="bottom"
-               title="A Cron expression to schedule purge of offset histories"
+               title="Cron expression to schedule purge of offset histories"
                data-toggle="tooltip">
 
         <p data-ng-show="settingsForm.purgeSchedule.$invalid && !settingsForm.purgeSchedule.$pristine"
@@ -16,7 +16,7 @@
          data-ng-class="{ 'has-error' : settingsForm.offsetFetchInterval.$invalid && !settingsForm.offsetFetchInterval.$pristine }">
         <label for="offsetFetchInterval">Offset Fetch Interval</label>
         <input type="number" id="offsetFetchInterval" name="offsetFetchInterval"
-               data-ng-model="settings.offsetFetchInterval" title="The duration in seconds between each offset request"
+               data-ng-model="settings.offsetFetchInterval" title="Duration in seconds between each offset request"
                data-ng-required="true" class="form-control" min="1">
 
         <p data-ng-show="settingsForm.offsetFetchInterval.$invalid && !settingsForm.offsetFetchInterval.$pristine"

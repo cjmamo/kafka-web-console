@@ -1,12 +1,12 @@
 <div class="table-responsive">
     <table class="table table-hover">
         <thead>
-        <th></th>
-        <th>Zookeeper</th>
-        <th>Topic</th>
-        <th>Partition</th>
-        <th>Log Size</th>
-        <th>Leader</th>
+        <th class="text-center"></th>
+        <th class="text-center">Zookeeper</th>
+        <th class="text-center">Topic</th>
+        <th class="text-center">Partition</th>
+        <th class="text-center">Log Size</th>
+        <th class="text-center">Leader</th>
         </thead>
         <tbody data-ng-repeat="topic in topics">
         <tr>
@@ -14,18 +14,19 @@
                 <i class="fa fa-minus-square fa-lg" data-ng-if="topic.expanded" data-ng-click="topic.expanded = false"/>
                 <i class="fa fa-plus-square fa-lg" data-ng-if="!topic.expanded" data-ng-click="topic.expanded = true"/>
             </td>
-            <td class="clickable" data-ng-click="getTopic(topic);">{{topic.zookeeper}}</td>
-            <td class="clickable" data-ng-click="getTopic(topic);">{{topic.name}}</td>
-            <td class="clickable" data-ng-click="getTopic(topic);"></td>
-            <td class="clickable" data-ng-click="getTopic(topic);">{{topic.logSize}}</td>
+            <td class="clickable text-center" data-ng-click="getTopic(topic);">{{topic.zookeeper}}</td>
+            <td class="clickable text-center" data-ng-click="getTopic(topic);">{{topic.name}}</td>
+            <td class="clickable text-center" data-ng-click="getTopic(topic);">-</td>
+            <td class="clickable text-center" data-ng-click="getTopic(topic);">{{topic.logSize}}</td>
+            <td class="clickable text-center" data-ng-click="getTopic(topic);">-</td>
         </tr>
         <tr data-ng-if="topic.expanded" class="row-animation" data-ng-repeat="partition in topic.partitions track by $index">
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>{{$index}}</td>
-            <td>{{partition.logSize}}</td>
-            <td>{{partition.leader}}</td>
+            <td class="text-center"></td>
+            <td class="text-center"></td>
+            <td class="text-center"></td>
+            <td class="text-center">{{$index}}</td>
+            <td class="text-center">{{partition.logSize}}</td>
+            <td class="text-center">{{partition.leader}}</td>
         </tr>
         </tbody>
     </table>

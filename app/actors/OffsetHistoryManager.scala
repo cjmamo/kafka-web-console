@@ -53,7 +53,7 @@ class OffsetHistoryManager extends Actor {
   override def preStart() {
     scheduler.start()
     schedule()
-    self ! Message.FetchOffsetPoints
+    self ! Message.FetchOffsets
   }
 
   override def postStop() {
@@ -61,15 +61,15 @@ class OffsetHistoryManager extends Actor {
   }
 
   override def receive: Receive = {
-    case Message.FetchOffsetPoints => {
+    case Message.FetchOffsets => {
       fetchOffsetPoints()
-      fetchOffsetPointsTask = Akka.system.scheduler.scheduleOnce(Duration.create(Setting.findByKey(Setting.OffsetFetchInterval.toString).get.value.toLong, TimeUnit.SECONDS), self, Message.FetchOffsetPoints)
+      fetchOffsetPointsTask = Akka.system.scheduler.scheduleOnce(Duration.create(Setting.findByKey(Setting.OffsetFetchInterval.toString).get.value.toLong, TimeUnit.SECONDS), self, Message.FetchOffsets)
     }
     case Message.SettingsUpdateNotification => {
       scheduler.deleteJob(new JobKey(JobKey))
       schedule()
       fetchOffsetPointsTask.cancel()
-      Akka.system.scheduler.scheduleOnce(Duration.create(Setting.findByKey(Setting.OffsetFetchInterval.toString).get.value.toLong, TimeUnit.SECONDS), self, Message.FetchOffsetPoints)
+      Akka.system.scheduler.scheduleOnce(Duration.create(Setting.findByKey(Setting.OffsetFetchInterval.toString).get.value.toLong, TimeUnit.SECONDS), self, Message.FetchOffsets)
     }
     case Message.Purge => {
       OffsetPoint.truncate()
@@ -99,7 +99,7 @@ class OffsetHistoryManager extends Actor {
     val jdm = new JobDataMap()
     jdm.put("actor", self)
     val job = JobBuilder.newJob(classOf[Executor]).withIdentity(JobKey).usingJobData(jdm).build()
-    scheduler.scheduleJob(job, TriggerBuilder.newTrigger().startNow().forJob(job).withSchedule(CronScheduleBuilder.cronSchedule(Setting.findByKey("PURGE_SCHEDULE").get.value)).build())
+    scheduler.scheduleJob(job, TriggerBuilder.newTrigger().startNow().forJob(job).withSchedule(CronScheduleBuilder.cronSchedule(Setting.findByKey(Setting.PurgeSchedule.toString).get.value)).build())
   }
 
   private def fetchOffsetPoints() {

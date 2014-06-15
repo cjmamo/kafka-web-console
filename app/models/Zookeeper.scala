@@ -76,7 +76,7 @@ object Zookeeper {
   }
 
   def delete(zookeeper: Zookeeper) = inTransaction {
-    for (offsetHistory <-  OffsetHistory.findByZookeeperId(zookeeper.id)) {
+    for (offsetHistory <- OffsetHistory.findByZookeeperId(zookeeper.id)) {
       OffsetPoint.deleteByOffsetHistoryId(offsetHistory.id)
       OffsetHistory.delete(offsetHistory)
     }

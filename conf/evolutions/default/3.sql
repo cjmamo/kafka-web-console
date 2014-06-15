@@ -35,7 +35,7 @@ CREATE TABLE settings (
 );
 
 INSERT INTO settings (key, value) VALUES ('PURGE_SCHEDULE', '0 0 0 ? * SUN *');
-INSERT INTO settings (key, value) VALUES ('OFFSET_FETCH_INTERVAL', '10');
+INSERT INTO settings (key, value) VALUES ('OFFSET_FETCH_INTERVAL', '30');
 
 # --- !Downs
 
