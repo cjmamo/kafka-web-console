@@ -54,7 +54,7 @@ Getting Started
    - MySQL
    - Apache Derby
    - Microsoft SQL Server
-    Changing the database might necessitate making minor changes to the DDL found in */conf/evolutions/default* to accommodate the new database.<br/>   
+Changing the database might necessitate making minor changes to the DDL found in */conf/evolutions/default* to accommodate the new database.<br/>   
    
 2. Before you can monitor a broker, you need to register the Zookeeper server associated with it:
 
