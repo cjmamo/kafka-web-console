@@ -52,6 +52,6 @@ object Setting extends Enumeration {
   }
 }
 
-case class Setting(@Column("key") id: String, value: String) extends KeyedEntity[String] {
+case class Setting(@Column("key_") id: String, value: String) extends KeyedEntity[String] {
   def key = id
 }

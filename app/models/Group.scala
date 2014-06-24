@@ -36,7 +36,7 @@ object Group extends Enumeration {
   }
 
   def findByName(name: String) = inTransaction {
-    from(groupsTable)(group => where(group.name === name) select (group)).headOption
+    from(groupsTable)(group => where(group.name === name) select group).headOption
   }
 }
 
@@ -44,6 +44,6 @@ case class Group(val name: String) extends KeyedEntity[Long] {
   override val id = 0L
 
   lazy val zookeepers: Seq[Zookeeper] = inTransaction {
-    Database.groupToZookeepers.left(this).toSeq
+    Database.groupToZookeepers.left(this).toList
   }
 }

@@ -30,12 +30,12 @@ CREATE TABLE offsetPoints (
 );
 
 CREATE TABLE settings (
-  key VARCHAR(255) PRIMARY KEY,
+  key_ VARCHAR(255) PRIMARY KEY,
   value VARCHAR(255)
 );
 
-INSERT INTO settings (key, value) VALUES ('PURGE_SCHEDULE', '0 0 0 ? * SUN *');
-INSERT INTO settings (key, value) VALUES ('OFFSET_FETCH_INTERVAL', '30');
+INSERT INTO settings (key_, value) VALUES ('PURGE_SCHEDULE', '0 0 0 ? * SUN *');
+INSERT INTO settings (key_, value) VALUES ('OFFSET_FETCH_INTERVAL', '30');
 
 # --- !Downs
 
