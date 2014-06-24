@@ -16,6 +16,8 @@
 
 package common
 
+import play.api.Logger
+
 import scala.concurrent.{Future, Promise}
 import com.twitter.util.{Throw, Return}
 import com.twitter.zk.{ZNode, ZkClient}
@@ -38,29 +40,50 @@ object Util {
   }
 
   def getPartitionLeaders(topicName: String, zkClient: ZkClient): Future[Seq[String]] = {
+    Logger.debug("Getting partition leaders for topic " + topicName)
     return for {
       partitionStates <- getZChildren(zkClient, "/brokers/topics/" + topicName + "/partitions/*/state")
       partitionsData <- Future.sequence(partitionStates.map(p => twitterToScalaFuture(p.getData().map(d => (p.path.split("/")(5), new String(d.bytes))))))
       brokerIds = partitionsData.map(d => (d._1, scala.util.parsing.json.JSON.parseFull(d._2).get.asInstanceOf[Map[String, Any]].get("leader").get))
       brokers <- Future.sequence(brokerIds.map(bid => getZChildren(zkClient, "/brokers/ids/" + bid._2.toString.toDouble.toInt).map((bid._1, _))))
-      brokersData <- Future.sequence(brokers.map(d => twitterToScalaFuture(d._2.head.getData().map((d._1, _)))))
+      partitionsWithLeaders = brokers.filter(_._2.headOption match {
+        case Some(s) => true
+        case _ => false
+      })
+      partitionsWithoutLeaders = brokers.filterNot(b => b._2.headOption match {
+        case Some(s) => true
+        case _ => Logger.warn("Partition " + b._1 + " in topic " + topicName + " has no leaders"); false
+      })
+      brokersData <- Future.sequence(partitionsWithLeaders.map(d => twitterToScalaFuture(d._2.head.getData().map((d._1, _)))))
       brokersInfo = brokersData.map(d => (d._1, scala.util.parsing.json.JSON.parseFull(new String(d._2.bytes)).get.asInstanceOf[Map[String, Any]]))
-      bb = brokersInfo.map(bi => (bi._1, bi._2.get("host").get + ":" + bi._2.get("port").get.toString.toDouble.toInt))
-    } yield bb.sortBy(p => p._1.toInt).map(p => p._2)
+      brokersAddr = brokersInfo.map(bi => (bi._1, bi._2.get("host").get + ":" + bi._2.get("port").get.toString.toDouble.toInt))
+      pidsAndBrokers = brokersAddr ++ partitionsWithoutLeaders.map(pid => (pid._1, ""))
+    } yield pidsAndBrokers.sortBy(pb => pb._1.toInt).map(pb => pb._2)
   }
 
   def getPartitionsLogSize(topicName: String, partitionLeaders: Seq[String]): Future[Seq[Long]] = {
+    Logger.debug("Getting partition log sizes for topic " + topicName + " from partition leaders " + partitionLeaders.mkString(", "))
     return for {
-      clients <- Future.sequence(partitionLeaders.map(addr => Future(Kafka.newRichClient(addr))))
-      partitionsLogSize <- Future.sequence(clients.zipWithIndex.map { e =>
-        val offset = twitterToScalaFuture(e._1.offset(topicName, e._2, OffsetRequest.LatestTime)).map(_.offsets.head)
-        e._1.close()
+      clients <- Future.sequence(partitionLeaders.map(addr => Future((addr, Kafka.newRichClient(addr)))))
+      partitionsLogSize <- Future.sequence(clients.zipWithIndex.map { tu =>
+        val addr = tu._1._1
+        val client = tu._1._2
+        var offset = Future(0L)
+
+        if (!addr.isEmpty) {
+          offset = twitterToScalaFuture(client.offset(topicName, tu._2, OffsetRequest.LatestTime)).map(_.offsets.head).recover {
+            case e => Logger.warn("Count not connect to partition leader " + addr + ". Error message: " + e.getMessage); 0L
+          }
+        }
+
+        client.close()
         offset
       })
     } yield partitionsLogSize
   }
 
   def getPartitionOffsets(topicName: String, zkClient: ZkClient): Future[Map[String, Seq[Long]]] = {
+    Logger.debug("Getting partition offsets for topic " + topicName)
     return for {
       offsetsPartitionsNodes <- getZChildren(zkClient, "/consumers/*/offsets/" + topicName + "/*")
       partitionOffsets <- Future.sequence(offsetsPartitionsNodes.map(p => twitterToScalaFuture(p.getData().map(d => (p.path.split("/")(2), p.name, new String(d.bytes).toLong)))))

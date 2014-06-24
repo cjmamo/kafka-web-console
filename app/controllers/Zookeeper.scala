@@ -75,7 +75,7 @@ object Zookeeper extends Controller {
 
   def delete(name: String) = Action {
     val zk = models.Zookeeper.findByName(name).get
-    models.Zookeeper.update(models.Zookeeper(zk.name, zk.host, zk.port, zk.groupId, models.Status.Deleted.id, zk.chroot, zk.id))
+    models.Zookeeper.delete(models.Zookeeper.findById(zk.id).get)
     Akka.system.actorSelection("akka://application/user/router") ! Message.Disconnect(zk)
     NoContent
   }

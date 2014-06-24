@@ -47,17 +47,12 @@ class ConnectionManager() extends Actor {
 
   override def receive: Actor.Receive = {
     case connectMessage: Message.Connect => connect(connectMessage.zookeeper)
-    case connectNotification: Message.ConnectNotification => Zookeeper.upsert(connectNotification.zookeeper)
+    case connectNotification: Message.ConnectNotification => Zookeeper.update(connectNotification.zookeeper)
     case disconnectMessage: Message.Disconnect => disconnect(disconnectMessage.zookeeper)
     case Terminated => terminate()
   }
 
   private def connect(zk: Zookeeper) {
-    models.Zookeeper.findById(zk.id) match {
-      case Some(s) => if (s.statusId == Status.Deleted.id) return
-      case _ => return
-    }
-
     val zkClient = getZkClient(zk, lookupZookeeperConnections())
 
     val onSessionEvent: PartialFunction[StateEvent, Unit] = {
@@ -73,10 +68,13 @@ class ConnectionManager() extends Actor {
     zkClient.onSessionEvent(onSessionEvent)
 
     zkClient().onFailure(_ => {
-      router ! ConnectNotification(zk, Status.Connecting)
-      Akka.system.scheduler.scheduleOnce(
-        Duration.create(5, TimeUnit.SECONDS), self, Message.Connect(zk)
-      )
+      // attempt re-connection only if the Zookeeper hasn't been deleted by the user
+      if (Zookeeper.findById(zk.id).isDefined) {
+        router ! ConnectNotification(zk, Status.Connecting)
+        Akka.system.scheduler.scheduleOnce(
+          Duration.create(5, TimeUnit.SECONDS), self, Message.Connect(zk)
+        )
+      }
     })
   }
 
@@ -115,7 +113,6 @@ class ConnectionManager() extends Actor {
       case Some(zkClient) =>
         zkClient.release()
         Registry.registerObject(PropertyConstants.ZookeeperConnections, lookupZookeeperConnections().filterKeys(_ != zk.name))
-        Zookeeper.delete(models.Zookeeper.findById(zk.id).get)
       case _ =>
     }
   }
