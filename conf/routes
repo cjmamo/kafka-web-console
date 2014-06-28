@@ -3,33 +3,36 @@
 # ~~~~
 
 # Home page
-GET           /                                                           controllers.Application.index()
+GET           /                                                            controllers.Application.index()
 
-GET           /zookeepers                                                 controllers.Assets.at(path="/public", file="html/partials/zookeeper/index.html")
-GET           /zookeepers.json/feed                                       controllers.Zookeeper.feed()
-GET           /zookeepers.json/:group                                     controllers.Zookeeper.index(group)
-PUT           /zookeepers.json                                            controllers.Zookeeper.create()
-DELETE        /zookeepers.json/:name                                      controllers.Zookeeper.delete(name)
+GET           /zookeepers                                                  controllers.Assets.at(path="/public", file="html/partials/zookeeper/index.html")
+GET           /zookeepers.json/feed                                        controllers.Zookeeper.feed()
+GET           /zookeepers.json/:group                                      controllers.Zookeeper.index(group)
+PUT           /zookeepers.json                                             controllers.Zookeeper.create()
+DELETE        /zookeepers.json/:name                                       controllers.Zookeeper.delete(name)
 
-GET           /topics                                                     controllers.Assets.at(path="/public", file="html/partials/topic/index.html")
-GET           /topics.json                                                controllers.Topic.index()
-GET           /topics.json/:topic/:zookeeper                              controllers.Topic.show(topic, zookeeper)
-GET           /topics.json/:topic/:zookeeper/feed                         controllers.Topic.feed(topic, zookeeper)
-GET           /topics/:name/:zookeeper                                    controllers.IgnoreParamAssets.at(path="/public", file="html/partials/topic/show.html", name, zookeeper)
+GET           /topics                                                      controllers.Assets.at(path="/public", file="html/partials/topic/index.html")
+GET           /topics.json                                                 controllers.Topic.index()
+GET           /topics.json/:topic/:zookeeper                               controllers.Topic.show(topic, zookeeper)
+GET           /topics.json/:topic/:zookeeper/feed                          controllers.Topic.feed(topic, zookeeper)
+GET           /topics/:name/:zookeeper                                     controllers.IgnoreParamAssets.at(path="/public", file="html/partials/topic/show.html", name, zookeeper)
 
-GET           /consumergroups.json/:name/:topic/:zookeeper                controllers.ConsumerGroup.show(name, topic, zookeeper)
+GET           /consumergroups.json/:consumerGroup/:topic/:zookeeper        controllers.ConsumerGroup.show(consumerGroup, topic, zookeeper)
 
-GET           /groups                                                     controllers.Group.index()
+GET           /groups                                                      controllers.Group.index()
 
-GET           /brokers                                                    controllers.Assets.at(path="/public", file="html/partials/broker/index.html")
-GET           /brokers.json                                               controllers.Broker.index()
+GET           /brokers                                                     controllers.Assets.at(path="/public", file="html/partials/broker/index.html")
+GET           /brokers.json                                                controllers.Broker.index()
 
-GET           /offsethistory/:consumerGroup/:topic/:zookeeper             controllers.IgnoreParamAssets.at2(path="/public", file="html/partials/offset-history/show.html", consumerGroup, topic, zookeeper)
-GET           /offsethistory.json/:consumerGroup/:topic/:zookeeper        controllers.OffsetHistory.show(consumerGroup, topic, zookeeper)
+GET           /offsethistory/:consumerGroup/:topic/:zookeeper              controllers.IgnoreParamAssets.at2(path="/public", file="html/partials/offset-history/show.html", consumerGroup, topic, zookeeper)
+GET           /offsethistory.json/:consumerGroup/:topic/:zookeeper         controllers.OffsetHistory.show(consumerGroup, topic, zookeeper)
 
-GET           /settings                                                   controllers.Assets.at(path="/public", file="html/partials/settings/index.html")
-GET           /settings.json                                              controllers.Settings.index()
-POST          /settings.json                                              controllers.Settings.update()
+GET           /settings                                                    controllers.Assets.at(path="/public", file="html/partials/settings/index.html")
+GET           /settings.json                                               controllers.Settings.index()
+POST          /settings.json                                               controllers.Settings.update()
 
 # Map static resources from the /public folder to the /assets URL path
-GET           /assets/*file                                               controllers.Assets.at(path="/public", file)
+GET           /assets/*file                                                controllers.Assets.at(path="/public", file)
+
+GET           /api/console                                                 controllers.ApiConsole.at(path="/public/api-console", file="index.html")
+GET           /api/*file                                                   controllers.ApiConsole.at(path="/public/api-console", file)

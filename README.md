@@ -32,7 +32,7 @@ Kafka Web Console is a Java web application for monitoring [Apache Kafka](http:/
 
 ***
 
-Furthermore, the console provides a JSON API.
+Furthermore, the console provides a JSON API described in [RAML](/public/api-console/kafka-web-console.raml). The API can be tested using the embedded API Console accessible through the URL http://*[hostname]*:*[port]*/api/console. 
 
 Requirements
 ---
@@ -55,7 +55,7 @@ Getting Started
    - Apache Derby
    - Microsoft SQL Server
 
-   Changing the database might necessitate making minor changes to the DDL found in *conf/evolutions/default* to accommodate the new database.
+   Changing the database might necessitate making minor modifications to the DDL found in *conf/evolutions/default* to accommodate the new database.
    
 2. Before you can monitor a broker, you need to register the Zookeeper server associated with it:
 

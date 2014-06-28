@@ -1,0 +1,23 @@
+{
+    "title": "Zookeeper",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string"
+        },
+        "host": {
+            "type": "string"
+        },
+        "port": {
+            "type": "integer",
+            "minimum": 0
+        },
+        "group": {
+            "type": "string"
+        },
+        "chroot": {
+            "type": "string"
+        }
+    },
+    "required": ["name", "host", "port", "group"]
+}

@@ -1,0 +1,30 @@
+#%RAML 0.8
+
+title: Kafka Web Console API
+version: 1.0
+baseUri: http://{hostname}:{port}
+mediaType: application/json
+
+/zookeepers.json/{group}:
+    get:
+/zookeepers.json:
+    put:
+        body:
+            schema: !include zookeeper.json
+/zookeepers.json/{name}:
+    delete:
+/topics.json:
+    get:
+/topics.json/{topic}/{zookeeper}:
+    get:
+/brokers.json:
+    get:
+/consumergroups.json/{consumerGroup}/{topic}/{zookeeper}:
+    get:
+/offsethistory.json/{consumerGroup}/{topic}/{zookeeper}:
+    get:
+/settings.json:
+    get:
+    post:
+        body:
+            schema: !include settings.json
