@@ -15,39 +15,40 @@
  */
 
 var app = angular.module('app', ['ngRoute', 'ngAnimate'])
-    .config(function ($routeProvider) {
+    .config(function ($locationProvider, $routeProvider) {
         $routeProvider
             .when('/settings', {
                 controller: 'SettingsController',
-                templateUrl: '/settings'
+                templateUrl: 'settings'
             })
             .when('/zookeepers', {
                 controller: 'ZookeepersController',
-                templateUrl: '/zookeepers'
+                templateUrl: 'zookeepers'
             })
             .when('/topics', {
                 controller: 'TopicsController',
-                templateUrl: '/topics'
+                templateUrl: 'topics'
             })
             .when('/brokers', {
                 controller: 'BrokersController',
-                templateUrl: '/brokers'
+                templateUrl: 'brokers'
             })
             .when('/topics/:topic/:zookeeper', {
                 controller: 'TopicController',
                 templateUrl: function (params) {
-                    return '/topics/' + params.topic + '/' + params.zookeeper
+                    return 'topics/' + params.topic + '/' + params.zookeeper
                 }
             })
             .when('/offsethistory/:consumerGroup/:topic/:zookeeper', {
                 controller: 'OffsetHistoryController',
                 templateUrl: function (params) {
-                    return '/offsethistory/' + params.consumerGroup + '/' + params.topic + '/' + params.zookeeper
+                    return 'offsethistory/' + params.consumerGroup + '/' + params.topic + '/' + params.zookeeper
                 }
             })
             .otherwise({
-                redirectTo: '/zookeepers'
+                redirectTo: 'zookeepers'
             });
+
     });
 
 app.run(function ($rootScope, $location) {

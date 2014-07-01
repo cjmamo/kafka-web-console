@@ -17,7 +17,7 @@
 app.controller("SettingsController", function ($http, $scope, $location) {
     $('input').tooltip()
 
-    $http.get('/settings.json').success(function (data) {
+    $http.get('settings.json').success(function (data) {
         $scope.settings = []
 
         angular.forEach(data, function (setting) {
@@ -31,7 +31,7 @@ app.controller("SettingsController", function ($http, $scope, $location) {
     });
 
     $scope.updateSettings = function (settings) {
-        $http.post('/settings.json', [
+        $http.post('settings.json', [
             { key: 'PURGE_SCHEDULE', value: settings.purgeSchedule},
             { key: 'OFFSET_FETCH_INTERVAL', value: settings.offsetFetchInterval.toString()}
         ]).success(function () {

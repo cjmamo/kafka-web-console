@@ -15,7 +15,7 @@
  */
 
 app.controller("OffsetHistoryController", function ($http, $scope, $location, $routeParams) {
-    $http.get('/offsethistory.json/' + $routeParams.consumerGroup + '/' + $routeParams.topic + '/' + $routeParams.zookeeper).success(function (data) {
+    $http.get('offsethistory.json/' + $routeParams.consumerGroup + '/' + $routeParams.topic + '/' + $routeParams.zookeeper).success(function (data) {
 
         var offsetsGroupedByTimestamp = _.groupBy(data, function (offsetPoint) {
             return offsetPoint.consumerGroup.toString() + offsetPoint.timestamp.toString();

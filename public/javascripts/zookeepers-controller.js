@@ -29,7 +29,7 @@ app.controller("ZookeepersController", function ($scope, $http, $location) {
     $scope.zookeeper = {};
     $scope.zookeeper.group = $scope.groups[0];
 
-    var ws = new WebSocket('ws://' + $location.host() + ':' + $location.port() + '/zookeepers.json/feed');
+    var ws = new WebSocket('ws://' + $location.host() + ':' + $location.port() + $('base').attr('href') + 'zookeepers.json/feed');
 
     ws.onmessage = function (message) {
         var serverZk = angular.fromJson(message.data);
@@ -67,20 +67,20 @@ app.controller("ZookeepersController", function ($scope, $http, $location) {
     });
 
     $scope.getZookeepers = function (group) {
-        $http.get('/zookeepers.json/' + group).
+        $http.get('zookeepers.json/' + group).
             success(function (data) {
                 $scope[group + 'Zookeepers'] = data;
             });
     };
 
     $scope.createZookeeper = function (zookeeper) {
-        $http.put('/zookeepers.json', { name: zookeeper.name, host: zookeeper.host, port: zookeeper.port, group: zookeeper.group.name, chroot: zookeeper.chroot}).success(function () {
+        $http.put('zookeepers.json', { name: zookeeper.name, host: zookeeper.host, port: zookeeper.port, group: zookeeper.group.name, chroot: zookeeper.chroot}).success(function () {
             $location.path("/");
         });
     };
 
     $scope.removeZookeeper = function (zookeeper) {
-        $http.delete('/zookeepers.json/' + zookeeper.name).success(function () {
+        $http.delete('zookeepers.json/' + zookeeper.name).success(function () {
             $location.path("/");
         });
     };

@@ -15,7 +15,7 @@
  */
 
 app.controller("TopicsController", function ($scope, $location, $http, $filter) {
-    $http.get('/topics.json').
+    $http.get('topics.json').
         success(function (data) {
             $scope.topics = data;
 
@@ -29,6 +29,6 @@ app.controller("TopicsController", function ($scope, $location, $http, $filter) 
         });
 
     $scope.getTopic = function (topic) {
-        $location.path('/topics/' + topic.name + '/' + topic.zookeeper);
+        $location.path('topics/' + topic.name + '/' + topic.zookeeper);
     };
 });

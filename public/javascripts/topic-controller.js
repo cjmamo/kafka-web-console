@@ -15,7 +15,7 @@
  */
 
 app.controller("TopicController", function ($http, $scope, $location, $routeParams, $filter) {
-    $http.get('/topics.json/' + $routeParams.topic + '/' + $routeParams.zookeeper).success(function (data) {
+    $http.get('topics.json/' + $routeParams.topic + '/' + $routeParams.zookeeper).success(function (data) {
         $scope.topic = data;
         angular.forEach($scope.topic, function (consumerGroup) {
             angular.forEach(consumerGroup.partitions, function (partition) {
@@ -26,7 +26,7 @@ app.controller("TopicController", function ($http, $scope, $location, $routePara
         });
     });
 
-    var ws = new WebSocket('ws://' + $location.host() + ':' + $location.port() + '/topics.json/' + $routeParams.topic + '/' + $routeParams.zookeeper + '/feed');
+    var ws = new WebSocket('ws://' + $location.host() + ':' + $location.port() + $('base').attr('href') + 'topics.json/' + $routeParams.topic + '/' + $routeParams.zookeeper + '/feed');
     ws.onmessage = function (message) {
         var well = angular.element('<div class="well well-sm"/>');
         well.text(message.data);
@@ -39,7 +39,7 @@ app.controller("TopicController", function ($http, $scope, $location, $routePara
     });
 
     $scope.getConsumerGroup = function (consumerGroup) {
-        $http.get('/consumergroups.json/' + consumerGroup + '/' + $routeParams.topic + '/' + $routeParams.zookeeper).success(function (data) {
+        $http.get('consumergroups.json/' + consumerGroup + '/' + $routeParams.topic + '/' + $routeParams.zookeeper).success(function (data) {
             angular.forEach($scope.topic, function (consumerGroup_) {
                 if (consumerGroup === consumerGroup_.consumerGroup) {
                     consumerGroup_.consumers = data;
@@ -49,7 +49,7 @@ app.controller("TopicController", function ($http, $scope, $location, $routePara
     };
 
     $scope.getOffsetHistory = function (consumerGroup) {
-        $location.path('/offsethistory/' + consumerGroup.consumerGroup + '/' + $routeParams.topic + '/' + $routeParams.zookeeper);
+        $location.path('offsethistory/' + consumerGroup.consumerGroup + '/' + $routeParams.topic + '/' + $routeParams.zookeeper);
     };
 
 });
