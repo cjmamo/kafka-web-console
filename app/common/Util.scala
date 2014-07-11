@@ -72,7 +72,7 @@ object Util {
 
         if (!addr.isEmpty) {
           offset = twitterToScalaFuture(client.offset(topicName, tu._2, OffsetRequest.LatestTime)).map(_.offsets.head).recover {
-            case e => Logger.warn("Count not connect to partition leader " + addr + ". Error message: " + e.getMessage); 0L
+            case e => Logger.warn("Could not connect to partition leader " + addr + ". Error message: " + e.getMessage); 0L
           }
         }
 
