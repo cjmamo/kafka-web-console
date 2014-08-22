@@ -27,18 +27,18 @@ import com.twitter.zk.ZkClient
 
 object Broker extends Controller {
 
-  implicit object BrokerWrites extends Writes[Seq[(String, Map[String, Any])]] {
-    def writes(l: Seq[(String, Map[String, Any])]) = {
+  implicit object BrokerWrites extends Writes[Seq[(String, String, Map[String, Any])]] {
+    def writes(l: Seq[(String, String, Map[String, Any])]) = {
       val brokers = l.map { i =>
 
-        val fields = i._2.map { kv =>
+        val fields = i._3.map { kv =>
           kv._2 match {
             case v: Double => (kv._1, v.toInt.toString)
             case _ => (kv._1, kv._2.toString())
           }
         }
 
-        fields + ("zookeeper" -> i._1)
+        fields + ("zookeeper" -> i._1) + ("id" -> i._2)
       }
       Json.toJson(brokers)
     }
@@ -49,11 +49,11 @@ object Broker extends Controller {
     Future.sequence(brokers).map(l => Ok(Json.toJson(l.flatten)))
   }
 
-  private def getBrokers(zk: Zookeeper, zkClient: ZkClient): Future[Seq[(String, Map[String, Any])]] = {
+  private def getBrokers(zk: Zookeeper, zkClient: ZkClient): Future[Seq[(String, String, Map[String, Any])]] = {
     return for {
       brokerIds <- getZChildren(zkClient, "/brokers/ids/*")
       brokers <- Future.sequence(brokerIds.map(brokerId => twitterToScalaFuture(brokerId.getData())))
-    } yield brokers.map(b => (zk.name, scala.util.parsing.json.JSON.parseFull(new String(b.bytes)).get.asInstanceOf[Map[String, Any]]))
+    } yield brokers.map(b => (zk.name, b.toString.substring(b.toString.lastIndexOf("/")+1, b.toString.length()-1), scala.util.parsing.json.JSON.parseFull(new String(b.bytes)).get.asInstanceOf[Map[String, Any]]))
   }
 
 }

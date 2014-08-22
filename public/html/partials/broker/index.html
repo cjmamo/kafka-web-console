@@ -2,12 +2,14 @@
     <table class="table table-hover">
         <thead>
         <th class="text-center">Zookeeper</th>
+        <th class="text-center">Broker Id</th>
         <th class="text-center">Host</th>
         <th class="text-center">Port</th>
         </thead>
         <tbody>
         <tr data-ng-repeat="broker in brokers">
             <td class="text-center">{{broker.zookeeper}}</td>
+            <td class="text-center">{{broker.id}}</td>
             <td class="text-center">{{broker.host}}</td>
             <td class="text-center">{{broker.port}}</td>
         </tr>
