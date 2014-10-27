@@ -150,19 +150,17 @@ object Util {
   }
 
   def deleteZNode(zNode: ZNode): Future[ZNode] = {
-    val delNode = twitterToScalaFuture(zNode.getData()).flatMap { d =>
-      twitterToScalaFuture(zNode.delete(d.stat.getVersion)).recover {
-        case e: NotEmptyException => {
-          for {
-            children <- getZChildren(zNode, Seq("*"))
-            delChildren <- Future.sequence(children.map(n => deleteZNode(n)))
-          } yield deleteZNode(zNode)
-        }
-        case e: NoNodeException => Future(ZNode)
-      }
-    }
+    val deletePromise: Promise[ZNode] = Promise[ZNode]
 
-    //TODO: investigate why actual type is Future[Object]
-    delNode.asInstanceOf[Future[ZNode]]
+    getZChildren(zNode, Seq("*")).map(children =>
+      Future.sequence(children.map(n => deleteZNode(n))).onSuccess({ case children =>
+        val delNode = twitterToScalaFuture(zNode.getData()).flatMap { d =>
+          twitterToScalaFuture(zNode.delete(d.stat.getVersion)) }
+
+        delNode.onComplete(zNode => deletePromise complete zNode)
+      })
+    )
+
+    deletePromise.future
   }
 }
