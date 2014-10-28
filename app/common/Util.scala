@@ -152,14 +152,22 @@ object Util {
   def deleteZNode(zNode: ZNode): Future[ZNode] = {
     val deletePromise: Promise[ZNode] = Promise[ZNode]
 
-    getZChildren(zNode, Seq("*")).map(children =>
-      Future.sequence(children.map(n => deleteZNode(n))).onSuccess({ case children =>
+    Logger.debug(s"Attempting to delete ${zNode.path}")
+    getZChildren(zNode, Seq("*")).map({ children =>
+      val sequenceFuture = Future.sequence(children.map(n => deleteZNode(n)))
+
+      sequenceFuture.onSuccess({ case children =>
         val delNode = twitterToScalaFuture(zNode.getData()).flatMap { d =>
-          twitterToScalaFuture(zNode.delete(d.stat.getVersion)) }
+          twitterToScalaFuture(zNode.delete(d.stat.getVersion))
+        }
 
         delNode.onComplete(zNode => deletePromise complete zNode)
       })
-    )
+      
+      sequenceFuture.onFailure({ case t =>
+        deletePromise failure t
+      })
+    })
 
     deletePromise.future
   }
