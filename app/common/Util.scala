@@ -152,7 +152,6 @@ object Util {
   def deleteZNode(zNode: ZNode): Future[ZNode] = {
     val deletePromise: Promise[ZNode] = Promise[ZNode]
 
-    Logger.debug(s"Attempting to delete ${zNode.path}")
     getZChildren(zNode, Seq("*")).map({ children =>
       val sequenceFuture = Future.sequence(children.map(n => deleteZNode(n)))
 
