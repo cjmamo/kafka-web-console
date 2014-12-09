@@ -77,9 +77,10 @@ object Util {
           }
         }
 
-        clients.map{ a_client: (String, Client) => a_client._2.close() }
         offset
       })
+
+      closeClients <- clients.map{ a_client: (String, Client) => a_client._2.close() }
     } yield partitionsLogSize
   }
 
