@@ -26,6 +26,7 @@ import models.Zookeeper
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import org.apache.zookeeper.KeeperException.{NotEmptyException, NodeExistsException, NoNodeException}
 import okapies.finagle.Kafka
+import okapies.finagle.kafka.Client
 import kafka.api.OffsetRequest
 
 object Util {
@@ -76,7 +77,7 @@ object Util {
           }
         }
 
-        client.close()
+        clients.map{ a_client: (String, Client) => a_client._2.close() }
         offset
       })
     } yield partitionsLogSize
