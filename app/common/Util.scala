@@ -26,10 +26,7 @@ import com.twitter.zk.{ZNode, ZkClient}
 import common.Registry.PropertyConstants
 import models.Zookeeper
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import org.apache.zookeeper.KeeperException.{NotEmptyException, NodeExistsException, NoNodeException}
-import okapies.finagle.Kafka
-import okapies.finagle.kafka.Client
-import kafka.api.OffsetRequest
+import org.apache.zookeeper.KeeperException.NoNodeException
 
 object Util {
 
