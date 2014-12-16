@@ -14,6 +14,8 @@
 * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 * License for the specific language governing permissions and limitations under
 * the License.
+ *
+ * Author: Andrew Zafft | azafty468
 */
 
 package kafka.consumer;
@@ -109,18 +111,6 @@ public class LowLevelConsumer {
             short code = fetchResponse.errorCode(topic, partition);
             log.error("Error fetching data from the Broker:" + leadBroker + " Reason: " + code);
             return messages;
-// if (code == ErrorMapping.OffsetOutOfRangeCode()) {
-// // We asked for an invalid offset. For simple case ask for the last element to reset
-// readOffset = getLastOffset(consumer, topic, partition, kafka.api.OffsetRequest.LatestTime(), clientName);
-// continue;
-// }
-// try {
-// leadBroker = findNewLeader(leadBroker, topic, partition, port);
-// } catch (Exception e) {
-// KafkaClientTestHarness.log.error("Unable to find new lead broker.");
-// return messages;
-// }
-// continue;
         }
 
         for (MessageAndOffset messageAndOffset : fetchResponse.messageSet(topic, partition)) {
