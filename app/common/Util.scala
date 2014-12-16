@@ -16,6 +16,7 @@
 
 package common
 
+import kafka.consumer.async.AsyncLowLevelConsumer
 import play.api.Logger
 
 import scala.concurrent.{Future, Promise}
@@ -63,24 +64,19 @@ object Util {
   }
 
   def getPartitionsLogSize(topicName: String, partitionLeaders: Seq[String]): Future[Seq[Long]] = {
-    Logger.debug("Getting partition log sizes for topic " + topicName + " from partition leaders " + partitionLeaders.mkString(", "))
+    // Logger.debug("Getting partition log sizes for topic " + topicName + " from partition leaders " + partitionLeaders.mkString(", "))
+
     return for {
-      clients <- Future.sequence(partitionLeaders.map(addr => Future((addr, Kafka.newRichClient(addr)))))
-      partitionsLogSize <- Future.sequence(clients.zipWithIndex.map { tu =>
-        val addr = tu._1._1
-        val client = tu._1._2
-        var offset = Future(0L)
-
-        if (!addr.isEmpty) {
-          offset = twitterToScalaFuture(client.offset(topicName, tu._2, OffsetRequest.LatestTime)).map(_.offsets.head).recover {
-            case e => Logger.warn("Could not connect to partition leader " + addr + ". Error message: " + e.getMessage); 0L
-          }
-        }
-
+      clients <- Future.sequence(partitionLeaders.zipWithIndex.map {tuple =>
+        val hostAndPort = tuple._1.split(":")
+        val partition = tuple._2
+        AsyncLowLevelConsumer(topicName, partition, hostAndPort(0), hostAndPort(1).toInt)
+      })
+      partitionsLogSize <- Future.sequence(clients.map { client =>
+        val offset = client.offset
         offset
       })
-
-      closeClients = clients.map{ a_client: (String, Client) => a_client._2.close() }
+      closeClients <- Future.sequence(clients.map(client => client.close))
     } yield partitionsLogSize
   }
 
