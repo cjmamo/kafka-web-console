@@ -21,7 +21,6 @@
 package kafka.consumer.async
 
 import kafka.consumer.LowLevelConsumer
-import scala.concurrent.future
 import scala.concurrent.Future
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
@@ -29,18 +28,18 @@ class AsyncLowLevelConsumer(llc: LowLevelConsumer) {
 
   val consumer: LowLevelConsumer = llc
 
-  def offset: Future[Long] = future {
+  def offset: Future[Long] = Future {
     consumer.endingOffset()
   }
 
-  def close = future {
+  def close = Future {
     consumer.closeConsumers()
   }
 
 }
 
 object AsyncLowLevelConsumer {
-  def apply(topic: String, partition: Int, seedBroker: String, port: Int, findLeader: Boolean = true) = future {
+  def apply(topic: String, partition: Int, seedBroker: String, port: Int, findLeader: Boolean = true) = Future {
     val llc: LowLevelConsumer = new LowLevelConsumer(topic, partition, seedBroker, port, findLeader)
     new AsyncLowLevelConsumer(llc)
   }
