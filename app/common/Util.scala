@@ -70,10 +70,7 @@ object Util {
         val partition = tuple._2
         AsyncLowLevelConsumer(topicName, partition, hostAndPort(0), hostAndPort(1).toInt)
       })
-      partitionsLogSize <- Future.sequence(clients.map { client =>
-        val offset = client.offset
-        offset
-      })
+      partitionsLogSize <- Future.sequence(clients.map(client => client.offset))
       closeClients <- Future.sequence(clients.map(client => client.close))
     } yield partitionsLogSize
   }
