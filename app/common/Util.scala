@@ -62,7 +62,7 @@ object Util {
   }
 
   def getPartitionsLogSize(topicName: String, partitionLeaders: Seq[String]): Future[Seq[Long]] = {
-    // Logger.debug("Getting partition log sizes for topic " + topicName + " from partition leaders " + partitionLeaders.mkString(", "))
+    Logger.debug("Getting partition log sizes for topic " + topicName + " from partition leaders " + partitionLeaders.mkString(", "))
 
     return for {
       clients <- Future.sequence(partitionLeaders.zipWithIndex.map {tuple =>
