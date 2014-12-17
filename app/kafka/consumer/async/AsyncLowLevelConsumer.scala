@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2014 the original author or authors.
+ * Copyright (C) 2014 the original author or authors and Enernoc Inc.
  * See the LICENCE.txt file distributed with this work for additional
  * information regarding copyright ownership.
  *
@@ -21,26 +21,25 @@
 package kafka.consumer.async
 
 import kafka.consumer.LowLevelConsumer
+import scala.concurrent.future
 import scala.concurrent.Future
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
-class AsyncLowLevelConsumer(llc: LowLevelConsumer) {
+class AsyncLowLevelConsumer(consumer: LowLevelConsumer) {
 
-  val consumer: LowLevelConsumer = llc
-
-  def offset: Future[Long] = Future {
+  def offset: Future[Long] = future {
     consumer.endingOffset()
   }
 
-  def close = Future {
+  def close = future {
     consumer.closeConsumers()
   }
 
 }
 
 object AsyncLowLevelConsumer {
-  def apply(topic: String, partition: Int, seedBroker: String, port: Int, findLeader: Boolean = true) = Future {
-    val llc: LowLevelConsumer = new LowLevelConsumer(topic, partition, seedBroker, port, findLeader)
+  def apply(topic: String, partition: Int, seedBroker: String, port: Int) = future {
+    val llc: LowLevelConsumer = new LowLevelConsumer(topic, partition, seedBroker, port)
     new AsyncLowLevelConsumer(llc)
   }
 }
