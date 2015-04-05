@@ -61,7 +61,8 @@ import kafka.message.MessageAndMetadata
  *
  * Directories:
  * 1. Consumer id registry:
- * /consumers/[group_id]/ids[consumer_id] -> topic1,...topicN
+ * /consumers/[group_id]/ids/[consumer_id] -> topic1,...topicN
+ * (consumer_id is of the form hostname:uuid.)
  * A consumer has a unique consumer id within a consumer group. A consumer registers its id as an ephemeral znode
  * and puts all topics that it subscribes to as the value of the znode. The znode is deleted when the client is gone.
  * A consumer subscribes to event changes of the consumer id registry within its group.
@@ -432,8 +433,8 @@ private[kafka] class ZookeeperConsumerConnector(val config: ConsumerConfig,
     }
 
     private def rebalance(cluster: Cluster): Boolean = {
-      val myTopicThreadIdsMap = TopicCount.constructTopicCount(group, consumerIdString, zkClient).getConsumerThreadIdsPerTopic
-      val consumersPerTopicMap = getConsumersPerTopic(zkClient, group)
+      val myTopicThreadIdsMap = TopicCount.constructTopicCount(group, consumerIdString, zkClient, true).getConsumerThreadIdsPerTopic
+      val consumersPerTopicMap = getConsumersPerTopic(zkClient, group, true)
       val brokers = getAllBrokersInCluster(zkClient)
       if (brokers.size == 0) {
         // This can happen in a rare case when there are no brokers available in the cluster when the consumer is started.
@@ -489,9 +490,9 @@ private[kafka] class ZookeeperConsumerConnector(val config: ConsumerConfig,
               for (i <- startPart until startPart + nParts) {
                 val partition = curPartitions(i)
                 info(consumerThreadId + " attempting to claim partition " + partition)
-                addPartitionTopicInfo(currentTopicRegistry, topicDirs, partition, topic, consumerThreadId)
+                addPartitionTopicInfo(currentTopicRegistry, topicDirs, partition, topic)
                 // record the partition ownership decision
-                partitionOwnershipDecision += ((topic, partition) -> consumerThreadId)
+                partitionOwnershipDecision += ((topic, partition) -> consumerThreadId.toString())
               }
             }
           }
@@ -581,7 +582,7 @@ private[kafka] class ZookeeperConsumerConnector(val config: ConsumerConfig,
 
     private def addPartitionTopicInfo(currentTopicRegistry: Pool[String, Pool[Int, PartitionTopicInfo[_,_]]],
                                       topicDirs: ZKGroupTopicDirs, partition: Int,
-                                      topic: String, consumerThreadId: String) {
+                                      topic: String) {
       val partTopicInfoMap = currentTopicRegistry.get(topic)
 
       val znode = topicDirs.consumerOffsetDir + "/" + partition
@@ -629,7 +630,7 @@ private[kafka] class ZookeeperConsumerConnector(val config: ConsumerConfig,
       topicPartitionChangeListenner = new ZKTopicPartitionChangeListener(loadBalancerListener, keyDecoder, valueDecoder)
 
     // map of {topic -> Set(thread-1, thread-2, ...)}
-    val consumerThreadIdsPerTopic: Map[String, Set[String]] = topicCount.getConsumerThreadIdsPerTopic
+    val consumerThreadIdsPerTopic: Map[String, Set[ConsumerThreadId]] = topicCount.getConsumerThreadIdsPerTopic
 
     val topicThreadIds = consumerThreadIdsPerTopic.map {
       case(topic, threadIds) => threadIds.map((topic, _))
@@ -660,9 +661,9 @@ private[kafka] class ZookeeperConsumerConnector(val config: ConsumerConfig,
       throw new RuntimeException("Each consumer connector can create " + "message streams by filter at most once.")
 
      // bootstrap with existing topics
-    private var wildcardTopics = getChildrenParentMayNotExist(zkClient, BrokerTopicsPath).filter(topicFilter.isTopicAllowed)
+    private var wildcardTopics = getChildrenParentMayNotExist(zkClient, BrokerTopicsPath).filter(topicFilter.isTopicAllowed(_, true))
 
-    private val wildcardTopicCount = TopicCount.constructTopicCount(consumerIdString, topicFilter, numStreams, zkClient)
+    private val wildcardTopicCount = TopicCount.constructTopicCount(consumerIdString, topicFilter, numStreams, zkClient, true)
 
     val dirs = new ZKGroupDirs(config.groupId)
     registerConsumerInZK(dirs, consumerIdString, wildcardTopicCount)
@@ -678,7 +679,7 @@ private[kafka] class ZookeeperConsumerConnector(val config: ConsumerConfig,
     def handleTopicEvent(allTopics: Seq[String]) {
       debug("Handling topic event")
 
-      val updatedTopics = allTopics.filter(topicFilter.isTopicAllowed)
+      val updatedTopics = allTopics.filter(topicFilter.isTopicAllowed(_, true))
 
       val addedTopics = updatedTopics filterNot (wildcardTopics contains)
       if (addedTopics.nonEmpty)
