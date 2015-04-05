@@ -15,4 +15,8 @@ libraryDependencies ++= Seq(
     exclude("com.sun.jmx", "jmxri")
 )
 
-play.Project.playScalaSettings
+lazy val root = (project in file(".")).enablePlugins(PlayScala)
+
+includeFilter in (Assets, LessKeys.less) := "*.less"
+
+excludeFilter in (Assets, LessKeys.less) := "_*.less"
