@@ -1,0 +1,13 @@
+# When building native packages, SBT Native Packager will install this file
+# to /etc/default and the app start script will include its contents in the
+# start command.
+#
+# See: http://www.scala-sbt.org/sbt-native-packager/topics/play.html
+
+# Tell Play where to keep its pidfile
+-Dpidfile.path=/var/run/${{app_name}}/play.pid
+
+-DapplyEvolutions.default=true
+
+# Deployers should place their own config file with their own secret key
+-Dconfig.file=/etc/${{app_name}}/production.conf

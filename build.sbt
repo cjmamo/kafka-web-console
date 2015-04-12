@@ -2,6 +2,8 @@ name := "kafka-web-console"
 
 version := "2.1.0-SNAPSHOT"
 
+scalaVersion := "2.10.4"
+
 libraryDependencies ++= Seq(
   jdbc,
   cache,
@@ -15,4 +17,29 @@ libraryDependencies ++= Seq(
     exclude("com.sun.jmx", "jmxri")
 )
 
-play.Project.playScalaSettings
+enablePlugins(PlayScala, SbtWeb)
+
+includeFilter in (Assets, LessKeys.less) := "custom.less"
+
+/*
+ * Basic metadata for building native packages
+ *
+ * https://www.playframework.com/documentation/2.3.x/ProductionDist#The-Native-Packager
+ *
+ * - Run `sbt stage`
+ * - Inspect target/universal/stage
+ * - Run e.g. `sbt debian:packageBin`
+ */
+import com.typesafe.sbt.SbtNativePackager._
+import NativePackagerKeys._
+
+maintainer := "Claude Mamo <claude.mamo@gmail.com>"
+
+packageSummary := "A web application for monitoring Apache Kafka"
+
+packageDescription := packageSummary.value
+
+daemonUser in Linux := normalizedName.value
+
+daemonGroup in Linux := (daemonUser in Linux).value
+

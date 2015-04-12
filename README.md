@@ -36,17 +36,21 @@ Furthermore, the console provides a JSON API described in [RAML](/public/api-con
 
 Requirements
 ---
-- Play Framework 2.2.x
+- Play Framework 2.3.x
 - Apache Kafka 0.8.x
 - Zookeeper 3.3.3 or 3.3.4
 
 Deployment
 ----
-Consult Play!'s documentation for [deployment options and instructions](http://www.playframework.com/documentation/2.2.x/Production).
+Consult Play!'s documentation for [deployment options and instructions](http://www.playframework.com/documentation/2.3.x/Production).
+
+For instance, build a Debian package with the `debian:packageBin` task in SBT. You'll need to supply a production configuration file at `/etc/kafka-web-console/production.conf` after installing the produced .deb---you may copy `conf/application.conf` from the repo to start with, just change the secret key! Also if you stick with an H2 database, locate the file someplace that the `kafka-web-console` user has write privileges for, such as:
+
+    db.default.url="jdbc:h2:file:/var/run/kafka-web-console/play"
 
 Getting Started
 ---
-1. Kafka Web Console requires a relational database. By default, the server connects to an embedded H2 database and no database installation or configuration is needed. Consult Play!'s documentation to [specify a database for the console](http://www.playframework.com/documentation/2.2.x/ScalaDatabase). The following databases are supported:
+1. Kafka Web Console requires a relational database. By default, the server connects to an embedded H2 database and no database installation or configuration is needed. Consult Play!'s documentation to [specify a database for the console](http://www.playframework.com/documentation/2.3.x/ScalaDatabase). The following databases are supported:
    - H2 (default)
    - PostgreSql
    - Oracle
