@@ -46,27 +46,8 @@ Consult Play!'s documentation for [deployment options and instructions](http://w
 
 Getting Started
 ---
-1. Kafka Web Console requires a relational database. By default, the server connects to an embedded H2 database and no database installation or configuration is needed. Consult Play!'s documentation to [specify a database for the console](http://www.playframework.com/documentation/2.2.x/ScalaDatabase). The following databases are supported:
-   - H2 (default)
-   - PostgreSql
-   - Oracle
-   - DB2
-   - MySQL
-   - Apache Derby
-   - Microsoft SQL Server
 
-   Changing the database might necessitate making minor modifications to the [DDL](conf/evolutions/default) to accommodate the new database.
-   
-2. Before you can monitor a broker, you need to register the Zookeeper server associated with it:
-
-![register zookeeper](/img/register-zookeeper.png)
-
-Filling in the form and clicking on *Connect* will register the Zookeeper server. Once the console has successfully established a connection with the registered Zookeeper server, it can retrieve all necessary information about brokers, topics, and consumers:
-
-![zookeepers](/img/zookeepers.png)
-
-3. Launch the application
-
+1. Get Up & Running
    - Clone the repo
    - Make sure sbt is installed
    - In the root dir of the repo run sbt
@@ -80,6 +61,25 @@ Filling in the form and clicking on *Connect* will register the Zookeeper server
 
 (Server started, use Ctrl+D to stop and go back to the console...)
 ```
+
+2. Kafka Web Console requires a relational database. By default, the server connects to an embedded H2 database and no database installation or configuration is needed. Consult Play!'s documentation to [specify a database for the console](http://www.playframework.com/documentation/2.2.x/ScalaDatabase). The following databases are supported:
+   - H2 (default)
+   - PostgreSql
+   - Oracle
+   - DB2
+   - MySQL
+   - Apache Derby
+   - Microsoft SQL Server
+
+   Changing the database might necessitate making minor modifications to the [DDL](conf/evolutions/default) to accommodate the new database.
+   
+3. Before you can monitor a broker, you need to register the Zookeeper server associated with it:
+
+![register zookeeper](/img/register-zookeeper.png)
+
+Filling in the form and clicking on *Connect* will register the Zookeeper server. Once the console has successfully established a connection with the registered Zookeeper server, it can retrieve all necessary information about brokers, topics, and consumers:
+
+![zookeepers](/img/zookeepers.png)
 
 Support
 ---
