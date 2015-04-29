@@ -73,11 +73,13 @@ Filling in the form and clicking on *Connect* will register the Zookeeper server
    - When sbt has finished doing its thing you should be in the shell kafka-web-console
    - Run run - This should do more downloading then finally show you something like:
 
-   ```--- (Running the application from SBT, auto-reloading is enabled) ---
+```
+--- (Running the application from SBT, auto-reloading is enabled) ---
 
 [info] play - Listening for HTTP on /0:0:0:0:0:0:0:0:9000
 
-(Server started, use Ctrl+D to stop and go back to the console...)```
+(Server started, use Ctrl+D to stop and go back to the console...)
+```
 
 Support
 ---
