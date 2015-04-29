@@ -63,7 +63,7 @@ Getting Started
 ---
 
 
-2. Kafka Web Console requires a relational database. By default, the server connects to an embedded H2 database and no database installation or configuration is needed. Consult Play!'s documentation to [specify a database for the console](http://www.playframework.com/documentation/2.2.x/ScalaDatabase). The following databases are supported:
+1. Kafka Web Console requires a relational database. By default, the server connects to an embedded H2 database and no database installation or configuration is needed. Consult Play!'s documentation to [specify a database for the console](http://www.playframework.com/documentation/2.2.x/ScalaDatabase). The following databases are supported:
    - H2 (default)
    - PostgreSql
    - Oracle
@@ -74,7 +74,7 @@ Getting Started
 
    Changing the database might necessitate making minor modifications to the [DDL](conf/evolutions/default) to accommodate the new database.
    
-3. Before you can monitor a broker, you need to register the Zookeeper server associated with it:
+2. Before you can monitor a broker, you need to register the Zookeeper server associated with it:
 
 ![register zookeeper](/img/register-zookeeper.png)
 
