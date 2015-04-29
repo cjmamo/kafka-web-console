@@ -65,6 +65,20 @@ Filling in the form and clicking on *Connect* will register the Zookeeper server
 
 ![zookeepers](/img/zookeepers.png)
 
+3. Launch the application
+
+   - Clone the repo
+   - Make sure sbt is installed
+   - In the root dir of the repo run sbt
+   - When sbt has finished doing its thing you should be in the shell kafka-web-console
+   - Run run - This should do more downloading then finally show you something like:
+
+   ```--- (Running the application from SBT, auto-reloading is enabled) ---
+
+[info] play - Listening for HTTP on /0:0:0:0:0:0:0:0:9000
+
+(Server started, use Ctrl+D to stop and go back to the console...)```
+
 Support
 ---
 Please [report](http://github.com/claudemamo/kafka-web-console/issues) any bugs or desired features.
