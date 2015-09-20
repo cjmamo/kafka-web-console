@@ -48,6 +48,21 @@ Deployment
 ----
 Consult Play!'s documentation for [deployment options and instructions](http://www.playframework.com/documentation/2.2.x/Production).
 
+Local Dev Setup
+   - Clone the repo
+   - Make sure sbt is installed
+   - In the root dir of the repo run sbt
+   - When sbt has finished doing its thing you should be in the shell kafka-web-console
+   - Run run - This should do more downloading then finally show you something like:
+
+```
+--- (Running the application from SBT, auto-reloading is enabled) ---
+
+[info] play - Listening for HTTP on /0:0:0:0:0:0:0:0:9000
+
+(Server started, use Ctrl+D to stop and go back to the console...)
+```
+
 Getting Started
 ---
 1. Kafka Web Console requires a relational database. By default, the server connects to an embedded H2 database and no database installation or configuration is needed. Consult Play!'s documentation to [specify a database for the console](http://www.playframework.com/documentation/2.2.x/ScalaDatabase). The following databases are supported:
