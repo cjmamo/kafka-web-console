@@ -2,6 +2,10 @@ name := "kafka-web-console"
 
 version := "2.1.0-SNAPSHOT"
 
+lazy val root = (project in file(".")).enablePlugins(PlayScala)
+
+scalaVersion := "2.10.4"
+
 libraryDependencies ++= Seq(
   jdbc,
   cache,
@@ -15,4 +19,4 @@ libraryDependencies ++= Seq(
     exclude("com.sun.jmx", "jmxri")
 )
 
-play.Project.playScalaSettings
+
