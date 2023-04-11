@@ -1,3 +1,7 @@
+Retired
+-------
+This project is no longer supported. Please consider [Kafka Manager](https://github.com/yahoo/kafka-manager) instead.
+
 Kafka Web Console
 =========
 Kafka Web Console is a Java web application for monitoring [Apache Kafka](http://kafka.apache.org/). With a **modern** web browser, you can view from the console:
