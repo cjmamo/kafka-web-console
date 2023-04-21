@@ -1,5 +1,6 @@
 /*
  * Copyright 2014 Claude Mamo
+ * Some changes Copyright 2014 Isaac Banner | ibanner56
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +17,7 @@
 
 package common
 
+import kafka.consumer.async.AsyncLowLevelConsumer
 import play.api.Logger
 
 import scala.concurrent.{Future, Promise}
@@ -24,9 +26,7 @@ import com.twitter.zk.{ZNode, ZkClient}
 import common.Registry.PropertyConstants
 import models.Zookeeper
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import org.apache.zookeeper.KeeperException.{NotEmptyException, NodeExistsException, NoNodeException}
-import okapies.finagle.Kafka
-import kafka.api.OffsetRequest
+import org.apache.zookeeper.KeeperException.NoNodeException
 
 object Util {
 
@@ -63,22 +63,15 @@ object Util {
 
   def getPartitionsLogSize(topicName: String, partitionLeaders: Seq[String]): Future[Seq[Long]] = {
     Logger.debug("Getting partition log sizes for topic " + topicName + " from partition leaders " + partitionLeaders.mkString(", "))
+
     return for {
-      clients <- Future.sequence(partitionLeaders.map(addr => Future((addr, Kafka.newRichClient(addr)))))
-      partitionsLogSize <- Future.sequence(clients.zipWithIndex.map { tu =>
-        val addr = tu._1._1
-        val client = tu._1._2
-        var offset = Future(0L)
-
-        if (!addr.isEmpty) {
-          offset = twitterToScalaFuture(client.offset(topicName, tu._2, OffsetRequest.LatestTime)).map(_.offsets.head).recover {
-            case e => Logger.warn("Could not connect to partition leader " + addr + ". Error message: " + e.getMessage); 0L
-          }
-        }
-
-        client.close()
-        offset
+      clients <- Future.sequence(partitionLeaders.zipWithIndex.map {tuple =>
+        val hostAndPort = tuple._1.split(":")
+        val partition = tuple._2
+        AsyncLowLevelConsumer(topicName, partition, hostAndPort(0), hostAndPort(1).toInt)
       })
+      partitionsLogSize <- Future.sequence(clients.map(client => client.offset))
+      closeClients <- Future.sequence(clients.map(client => client.close))
     } yield partitionsLogSize
   }
 
@@ -150,19 +143,24 @@ object Util {
   }
 
   def deleteZNode(zNode: ZNode): Future[ZNode] = {
-    val delNode = twitterToScalaFuture(zNode.getData()).flatMap { d =>
-      twitterToScalaFuture(zNode.delete(d.stat.getVersion)).recover {
-        case e: NotEmptyException => {
-          for {
-            children <- getZChildren(zNode, Seq("*"))
-            delChildren <- Future.sequence(children.map(n => deleteZNode(n)))
-          } yield deleteZNode(zNode)
-        }
-        case e: NoNodeException => Future(ZNode)
-      }
-    }
+    val deletePromise: Promise[ZNode] = Promise[ZNode]
 
-    //TODO: investigate why actual type is Future[Object]
-    delNode.asInstanceOf[Future[ZNode]]
+    getZChildren(zNode, Seq("*")).map({ children =>
+      val sequenceFuture = Future.sequence(children.map(n => deleteZNode(n)))
+
+      sequenceFuture.onSuccess({ case children =>
+        val delNode = twitterToScalaFuture(zNode.getData()).flatMap { d =>
+          twitterToScalaFuture(zNode.delete(d.stat.getVersion))
+        }
+
+        delNode.onComplete(zNode => deletePromise complete zNode)
+      })
+      
+      sequenceFuture.onFailure({ case t =>
+        deletePromise failure t
+      })
+    })
+
+    deletePromise.future
   }
 }
